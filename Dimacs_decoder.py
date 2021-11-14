@@ -9,9 +9,9 @@ def dimacs_rules(file): ## creates a list containing clauses of rules
                 line.pop() ## remove the 0 from the lines, do we need the "if"?
             for element in line:
                 if (element[0] == '-'):
-                    clause.append((0, (element[1:])))
+                    clause.append((element))
                 else:
-                    clause.append((1, element))                
+                    clause.append(element)                
             rules.append((clause))
     return rules
   
@@ -31,6 +31,7 @@ def dimacs_encode(solution, name): ## turns solution list into dimacs format.
           
 #rules = dimacs_rules('sudoku-rules.txt')
 #start = dimacs_start('sudoku-example.txt')
+#print(rules)
 
 
 

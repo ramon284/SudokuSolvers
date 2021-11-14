@@ -1,6 +1,10 @@
 import Dimacs_decoder as dim
 import time
 
+def negate(number): ## actually has strings as in- and output.
+    if (int(number) < 0):
+        return str(abs(int(number)))
+    return ('-'+number)
 
 def grid_printer(grid, sudokuSize): ## prints our sudoku game nicely.
     i = 0
@@ -20,31 +24,27 @@ def into_grid(solution, sudokuSize):
         grid[int(row)-1][int(col)-1] = sol[2]
     return grid
 
-startName = 'sudoku-example.txt'
-sudokuSize = 9
-start = dim.dimacs_start(startName)
-rules = dim.dimacs_rules('sudoku-rules.txt')
-
 def SAT(solution, rules):
     clauseBool = True
-    for clause in rules:
-        literalBool = False
+    for clause in rules: # check all clauses
+        literalBool = False 
         for literal in clause: 
             if(literalBool == True):
                 break
-            if (literal[0] == 1):
-                for sol in solution:
-                    if(sol == literal[1]):
-                        literalBool = True
-                        break
-            if (literal[0] == 0):
-                if not (literal[1] in solution):
+            if (literal[0] == '-'): ## these are the "not x or not y" clauses
+                if(literal in solution):
                     clauseBool = True
                     break
                 else:
                     clauseBool = False
+            if (literal[0] != '-'): ## these are the big clauses, checking for positives
+                if (literal in solution):
+                    clauseBool = True
+                    break
+                clauseBool = False
+                
         if (clauseBool == False): ## clause is false, try new solution.
-            #print('failed because of clause: ', clause)
+            print('failed because of clause: ', clause)
             return False
     return True
 
@@ -73,11 +73,20 @@ def createSolution(start, sudokuSize):
             print(time.time() - start_time)
             return start
 
-#print(SAT(start, rules))
-solution = createSolution(start, sudokuSize)
-print('importanto:      ',len(solution))
-tempgrid = into_grid(solution, sudokuSize)
-grid_printer(tempgrid, sudokuSize)
+startName = 'sudoku-example.txt'
+sudokuSize = 9
+start = dim.dimacs_start(startName) ## setting up rules and start locations
+rules = dim.dimacs_rules('sudoku-rules.txt')
+
+allNumbers = ['-'+str(i) for i in range(111,1000)] ## create every possible number, start as False
+allNumbers = [x for x in allNumbers if not ('0' in x)]
+
+for element in start: ## turn the False start numbers into True (regular numbers)
+    if ('-'+element in allNumbers):
+        idx = (allNumbers.index('-'+element))
+        allNumbers[idx] = negate(allNumbers[idx])
+print(allNumbers)
+
 
 
 
