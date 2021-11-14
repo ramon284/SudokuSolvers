@@ -21,13 +21,18 @@ def dimacs_start(file): ## parse the starting points into a list
     for position in locations:
         locationList.append(int(position[:3]))
     return locationList
+
+def dimacs_encode(solution, name): ## turns solution list into dimacs format.
+    solutionName = "sudoku-solution"+name+".txt"
+    with open(solutionName, 'w') as f:
+        for element in solution:
+            f.write(str(element) + " 0\n")
         
 rulesFile = "sudoku-rules.txt"
 startFile = "sudoku-example.txt"
 rules = dimacs_rules(rulesFile)
-print(rules)
 startLocations = dimacs_start(startFile)
-print(startLocations)
+dimacs_encode(startLocations,'1')
         
 
             
