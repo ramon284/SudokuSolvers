@@ -5,7 +5,7 @@
 '''
 
 import random
-
+import time
 import dimacs_decoder as decode
 
 
@@ -40,11 +40,13 @@ def pure_literal(formula):
     assignment = []
     pures = []  # [ x for x,y in counter.items() if -x not in counter ]
     for literal, times in counter.items():
-        if "-" + literal not in counter:
+        if -1* literal not in counter:
             pures.append(literal)
     for pure in pures:
+        print('hoi bcp')
         formula = bcp(formula, pure)
     assignment += pures
+    
     return formula, assignment
 
 
@@ -65,16 +67,17 @@ def unit_propagation(formula):
 
 def get_tautologies(formula):
     """Returns the tautologic clauses (i.e. [p ^ -p]) from the cnf"""
-
     tautologies = []
     for clause in formula:  # Loop through clauses and their terms
-        tautologies += [negation for negation in clause if negation * -1]  # check for negations of current term
+        tautologies += [clause for negation in clause if negation * -1 ]  # check for negations of current term
     return tautologies
 
 
 def remove_clauses_from_cnf(formula, clauses):
     for clause in clauses:
-        formula.remove(clause)
+        for line in formula:
+            if(clause in line):
+                formula.remove(line)
     return formula
 
 
@@ -84,9 +87,8 @@ def variable_selection(formula):
 
 
 def backtracking(formula, assignment):
-    tautologies = get_tautologies(formula)
-    remove_clauses_from_cnf(formula, tautologies)
-
+    #tautologies = get_tautologies(formula)
+    #remove_clauses_from_cnf(formula, tautologies)
     formula, pure_assignment = pure_literal(formula)
     formula, unit_assignment = unit_propagation(formula)
     assignment = assignment + pure_assignment + unit_assignment
@@ -117,28 +119,36 @@ def grid_printer(solution, sudoku_size):  # prints our sudoku game nicely.
 def into_grid(solution, sudoku_size):
     grid = [[0 for x in range(sudoku_size)] for y in range(sudoku_size)]
     for sol in solution:
-        print(sol)
-        row, col = sol[0], sol[1]
-        grid[int(row) - 1][int(col) - 1] = sol[2]
+        if(sol < 0):
+            continue
+        row, col = str(sol)[0], str(sol)[1]
+        grid[int(row) - 1][int(col) - 1] = str(sol)[2]
     return grid
 
 
 def main():
-    clauses = decode.dimacs_rules("D:\Projects\SudokuSolvers\sudoku-rules.txt")
+    start_time = time.time()
+    clauses = decode.dimacs_rules("sudoku-rules.txt")
     nvars = decode.dimacs_start('sudoku-example.txt')
+    clauses.extend(nvars)
     solution = backtracking(clauses, [])
+
     if solution:
-        for x in range(1, len(nvars) + 1):
-            if x not in solution and -x not in solution:
-                solution += x
+        print(len(solution))
+        # for x in range(1, len(nvars) + 1):
+        #     if x not in solution and -x not in solution:
+        #         print(x)
+        #         solution += x ## not sure what this does?
+        #         pass
         solution.sort(key=lambda x: abs(x))
-        print(solution)
+        #print(solution)
         grid_printer(solution, 9)
 
         print('s SATISFIABLE')
         print('v ' + ' '.join([str(x) for x in solution]) + ' 0')
     else:
         print('s UNSATISFIABLE')
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 if __name__ == '__main__':

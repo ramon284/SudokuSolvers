@@ -9,9 +9,11 @@ def dimacs_rules(file):  # creates a list containing clauses of rules
                 line.pop()  # remove the 0 from the lines, do we need the "if"?
             for element in line:
                 if element[0] == '-':
-                    clause.append(element)
+                    clause.append(int(element)) ## integers
+                    #clause.append(element) ## strings
                 else:
-                    clause.append(element)
+                    clause.append(int(element))
+                    #clause.append(element)
             rules.append(clause)
     return rules
 
@@ -20,7 +22,8 @@ def dimacs_start(file):  # parse the starting points into a list
     locations = [line.strip() for line in open(file, 'r')]
     location_list = []
     for position in locations:
-        location_list.append((position[:3]))
+        location_list.append([(int(position[:3]))]) ## int
+        #location_list.append((position[:3])) ## str
     return location_list
 
 
