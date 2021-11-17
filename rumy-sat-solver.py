@@ -67,6 +67,7 @@ def unit_propagation(formula):
 
 def get_tautologies(formula):
     """Returns the tautologic clauses (i.e. [p ^ -p]) from the cnf"""
+    ## Something is wrong with this function but I'm having a hard time figuring it out.
     tautologies = []
     for clause in formula:  # Loop through clauses and their terms
         tautologies += [clause for negation in clause if negation * -1 ]  # check for negations of current term
@@ -74,7 +75,9 @@ def get_tautologies(formula):
 
 
 def remove_clauses_from_cnf(formula, clauses):
+    ## The way we handle data inside of this function is reliant on the tautology function, requires some debugging.
     for clause in clauses:
+        #formula.remove(clause) ## this kinda depends on how the tautology function works, can't test yet.
         for line in formula:
             if(clause in line):
                 formula.remove(line)
@@ -141,7 +144,6 @@ def main():
         #         solution += x ## not sure what this does?
         #         pass
         solution.sort(key=lambda x: abs(x))
-        #print(solution)
         grid_printer(solution, 9)
 
         print('s SATISFIABLE')
