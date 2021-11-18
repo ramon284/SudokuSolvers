@@ -1,110 +1,76 @@
 #!/usr/bin/env python
-'''
-	SAT solver based on DPLL
-	Course in Advanced Programming in Artificial Intelligence - UdL
-'''
 
 import random
 import time
 import dimacs_decoder as decode
 
 
-def bcp(formula, unit):
-    modified = []
-    for clause in formula:
-        if unit in clause:
-            continue
-        if unit * -1 in clause:
-            c = [x for x in clause if x != unit * -1]
-            if len(c) == 0:
-                return -1
-            modified.append(c)
-        else:
-            modified.append(clause)
-    return modified
+def remove_unit_literals(cnf_formula, unit):
+    removed_units_list = [c for c in cnf_formula if unit not in c]
+    new_clauses = []
+    for clause in removed_units_list:
+        element = [e for e in clause if e != (unit * -1)]
+        if len(element) > 0:
+            new_clauses.append(element)
+    return new_clauses
 
 
-def get_counter(formula):
-    counter = {}
-    for clause in formula:
-        for literal in clause:
-            if literal in counter:
-                counter[literal] += 1
-            else:
-                counter[literal] = 1
-    return counter
+def remove_pure_literals(cnf_formula):
+    counter = get_literals_counter(cnf_formula)
+    partial_assignment = []
+    pure_literals = [element for element in counter if -1 * element not in counter]
+    for pure_literal in pure_literals:
+        cnf_formula = remove_unit_literals(cnf_formula, pure_literal)
+    partial_assignment += pure_literals
+
+    return cnf_formula, partial_assignment
 
 
-def pure_literal(formula):
-    counter = get_counter(formula)
-    assignment = []
-    pures = []  # [ x for x,y in counter.items() if -x not in counter ]
-    for literal, times in counter.items():
-        if -1* literal not in counter:
-            pures.append(literal)
-    for pure in pures:
-        print('hoi bcp')
-        formula = bcp(formula, pure)
-    assignment += pures
-    
-    return formula, assignment
-
-
-def unit_propagation(formula):
-    assignment = []
-    unit_clauses = [c for c in formula if len(c) == 1]
+def unit_propagate(cnf_formula):
+    partial_assignment = []
+    unit_clauses = [c for c in cnf_formula if len(c) == 1]
     while len(unit_clauses) > 0:
-        unit = unit_clauses[0]
-        formula = bcp(formula, unit[0])
-        assignment += [unit[0]]
-        if formula == -1:
+        unit_literal = unit_clauses[0]
+        cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0])
+        partial_assignment += [unit_literal[0]]
+        if cnf_formula == -1:
             return -1, []
-        if not formula:
-            return formula, assignment
-        unit_clauses = [c for c in formula if len(c) == 1]
-    return formula, assignment
+        if not cnf_formula:
+            return cnf_formula, partial_assignment
+        unit_clauses = [c for c in cnf_formula if len(c) == 1]
+    return cnf_formula, partial_assignment
 
 
-def get_tautologies(formula):
-    """Returns the tautologic clauses (i.e. [p ^ -p]) from the cnf"""
-    ## Something is wrong with this function but I'm having a hard time figuring it out.
-    tautologies = []
-    for clause in formula:  # Loop through clauses and their terms
-        tautologies += [clause for negation in clause if negation * -1 ]  # check for negations of current term
-    return tautologies
-
-
-def remove_clauses_from_cnf(formula, clauses):
-    ## The way we handle data inside of this function is reliant on the tautology function, requires some debugging.
-    for clause in clauses:
-        #formula.remove(clause) ## this kinda depends on how the tautology function works, can't test yet.
-        for line in formula:
-            if(clause in line):
-                formula.remove(line)
-    return formula
-
-
-def variable_selection(formula):
-    counter = get_counter(formula)
+def variable_selection(cnf_formula):
+    counter = get_literals_counter(cnf_formula)
     return random.choice(list(counter.keys()))
 
 
-def backtracking(formula, assignment):
-    #tautologies = get_tautologies(formula)
-    #remove_clauses_from_cnf(formula, tautologies)
-    formula, pure_assignment = pure_literal(formula)
-    formula, unit_assignment = unit_propagation(formula)
-    assignment = assignment + pure_assignment + unit_assignment
-    if formula == - 1:
+def backtracking(cnf_formula, partial_assignment):
+    cnf_formula, pure_assignment = remove_pure_literals(cnf_formula)
+    cnf_formula, unit_assignment = unit_propagate(cnf_formula)
+    partial_assignment = partial_assignment + pure_assignment + unit_assignment
+    if cnf_formula == - 1:
         return []
-    if not formula:
-        return assignment
+    if not cnf_formula:
+        return partial_assignment
 
-    variable = variable_selection(formula)
-    solution = backtracking(bcp(formula, variable), assignment + [variable])
-    if not solution:
-        solution = backtracking(bcp(formula, -variable), assignment + [-variable])
-    return solution
+    variable = variable_selection(cnf_formula)
+    sat = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable])
+    if not sat:
+        sat = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable])
+    return sat
+
+
+def get_literals_counter(cnf_formula):
+    literals_counter = {}
+    for clause in cnf_formula:
+        for L in clause:
+            if L in literals_counter:
+                literals_counter[L] += 1
+            else:
+                literals_counter[L] = 1
+    return literals_counter
 
 
 def grid_printer(solution, sudoku_size):  # prints our sudoku game nicely.
@@ -122,7 +88,7 @@ def grid_printer(solution, sudoku_size):  # prints our sudoku game nicely.
 def into_grid(solution, sudoku_size):
     grid = [[0 for x in range(sudoku_size)] for y in range(sudoku_size)]
     for sol in solution:
-        if(sol < 0):
+        if (sol < 0):
             continue
         row, col = str(sol)[0], str(sol)[1]
         grid[int(row) - 1][int(col) - 1] = str(sol)[2]
@@ -138,11 +104,6 @@ def main():
 
     if solution:
         print(len(solution))
-        # for x in range(1, len(nvars) + 1):
-        #     if x not in solution and -x not in solution:
-        #         print(x)
-        #         solution += x ## not sure what this does?
-        #         pass
         solution.sort(key=lambda x: abs(x))
         grid_printer(solution, 9)
 
