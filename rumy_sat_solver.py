@@ -95,23 +95,30 @@ def into_grid(solution, sudoku_size):
     return grid
 
 
-def main():
+def main(sudoku_path = ''):
     start_time = time.time()
+    if (sudoku_path == ''):
+        sudoku_path = 'sudoku-example.txt'
     clauses = decode.dimacs_rules("sudoku-rules.txt")
-    nvars = decode.dimacs_start('sudoku-example.txt')
+    nvars = decode.dimacs_start(sudoku_path)
+    startLength = len(nvars)
     clauses.extend(nvars)
     solution = backtracking(clauses, [])
+    satisfied = False
 
     if solution:
-        print(len(solution))
+        #print(len(solution))
         solution.sort(key=lambda x: abs(x))
-        grid_printer(solution, 9)
+        #grid_printer(solution, 9)
 
         print('s SATISFIABLE')
-        print('v ' + ' '.join([str(x) for x in solution]) + ' 0')
+        satisfied = True
+        #print('v ' + ' '.join([str(x) for x in solution]) + ' 0')
     else:
         print('s UNSATISFIABLE')
-    print("--- %s seconds ---" % (time.time() - start_time))
+    endtime = (time.time() - start_time)
+    print("--- %s seconds ---" % (endtime))
+    return endtime, satisfied, startLength
 
 
 if __name__ == '__main__':
