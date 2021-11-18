@@ -5,17 +5,31 @@ import time
 import dimacs_decoder as decode
 
 
+# def remove_unit_literals(cnf_formula, unit): ## legacy code baby
+#     removed_units_list = [c for c in cnf_formula if unit not in c]
+#     new_clauses = []
+#     for clause in removed_units_list:
+#         element = [e for e in clause if e != (unit * -1)]
+#         if len(element) > 0:
+#             new_clauses.append(element)
+#     return new_clauses
+
 def remove_unit_literals(cnf_formula, unit):
-    removed_units_list = [c for c in cnf_formula if unit not in c]
     new_clauses = []
-    for clause in removed_units_list:
-        element = [e for e in clause if e != (unit * -1)]
-        if len(element) > 0:
-            new_clauses.append(element)
+    for cnf in cnf_formula:
+        if unit in cnf:
+            continue
+        if (unit * -1) in cnf:
+            cls = [x for x in cnf if (x != (unit * -1))]
+            if (len(cls) == 0): 
+                return -1
+            new_clauses.append(cls)
+        else:
+            new_clauses.append(cnf)
     return new_clauses
+            
 
-
-def remove_pure_literals(cnf_formula):
+def remove_pure_literals(cnf_formula): 
     counter = get_literals_counter(cnf_formula)
     partial_assignment = []
     pure_literals = [element for element in counter if -1 * element not in counter]
@@ -50,7 +64,7 @@ def backtracking(cnf_formula, partial_assignment):
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula)
     cnf_formula, unit_assignment = unit_propagate(cnf_formula)
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
-    if cnf_formula == - 1:
+    if cnf_formula == -1:
         return []
     if not cnf_formula:
         return partial_assignment
@@ -107,10 +121,8 @@ def main(sudoku_path = ''):
     satisfied = False
 
     if solution:
-        #print(len(solution))
         solution.sort(key=lambda x: abs(x))
-        #grid_printer(solution, 9)
-
+        grid_printer(solution, 9)
         print('s SATISFIABLE')
         satisfied = True
         #print('v ' + ' '.join([str(x) for x in solution]) + ' 0')
