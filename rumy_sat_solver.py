@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-
 import random
 import time
 import dimacs_decoder as decode
+import sudoku_printer as sp
 
 
 # def remove_unit_literals(cnf_formula, unit): ## legacy code baby
@@ -76,7 +75,7 @@ def backtracking(cnf_formula, partial_assignment):
     return sat
 
 
-def get_literals_counter(cnf_formula):
+def get_literals_counter(cnf_formula): ## counts how often every literal is in the formula
     literals_counter = {}
     for clause in cnf_formula:
         for L in clause:
@@ -85,29 +84,6 @@ def get_literals_counter(cnf_formula):
             else:
                 literals_counter[L] = 1
     return literals_counter
-
-
-def grid_printer(solution, sudoku_size):  # prints our sudoku game nicely.
-    grid = into_grid(solution, sudoku_size)
-    i = 0
-    for row in grid:
-        if i % 3 == 0:
-            print('-' * sudoku_size * 3)
-        print('|', row[0], row[1], row[2], '|', row[3], row[4], row[5], '|',
-              row[6], row[7], row[8], '|')
-        i += 1
-    print('-' * sudoku_size * 3)
-
-
-def into_grid(solution, sudoku_size):
-    grid = [[0 for x in range(sudoku_size)] for y in range(sudoku_size)]
-    for sol in solution:
-        if (sol < 0):
-            continue
-        row, col = str(sol)[0], str(sol)[1]
-        grid[int(row) - 1][int(col) - 1] = str(sol)[2]
-    return grid
-
 
 def main(sudoku_path = ''):
     start_time = time.time()
@@ -122,7 +98,7 @@ def main(sudoku_path = ''):
 
     if solution:
         solution.sort(key=lambda x: abs(x))
-        grid_printer(solution, 9)
+        sp.grid_printer(solution, 9)
         print('s SATISFIABLE')
         satisfied = True
         #print('v ' + ' '.join([str(x) for x in solution]) + ' 0')
