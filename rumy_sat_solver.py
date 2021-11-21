@@ -10,7 +10,7 @@ import operator
 
 def remove_unit_literals(cnf_formula, unit): ## take all clauses + one literal
     new_clauses = []
-    if(heuristic == None):
+    if(heuristic != 'VSIDS'):
         for cnf in cnf_formula:
             if unit in cnf:
                 continue
@@ -214,7 +214,7 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
         (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable], heuristic=heuristic, branches=branches+1)
     return sat, branches
 
-def main(sudoku_path = '', heur = None):
+def main(sudoku_path = '', heur = None , printGrid = False):
     global heuristic
     heuristic = heur
     start_time = time.time()
@@ -225,13 +225,14 @@ def main(sudoku_path = '', heur = None):
     startLength = len(nvars)
     clauses.extend(nvars)
 
-    (solution, branches) = backtracking(clauses, [], heuristic='MOMS')
+    (solution, branches) = backtracking(clauses, [], heuristic=heuristic)
 
     satisfied = False
 
     if solution:
         solution.sort(key=lambda x: abs(x))
-        sp.grid_printer(solution, 9)
+        if printGrid == True : sp.grid_printer(solution, 9)
+        print('heuristic used: ',heuristic)
         print('s SATISFIABLE')
         satisfied = True
     else:
@@ -239,7 +240,7 @@ def main(sudoku_path = '', heur = None):
     endtime = (time.time() - start_time)
     print("--- %s seconds ---" % (endtime))
     print("--- %s branches ---" % (branches))
-    return endtime, satisfied, startLength
+    return endtime, satisfied, startLength, branches
 
 
 if __name__ == '__main__':

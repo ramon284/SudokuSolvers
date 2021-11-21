@@ -13,10 +13,8 @@ def reduce_score(reduction = 0.95): ## reduce the score of a variable every scor
 
 def return_highest_score():
     if(not scoreCounter):
-        print('random select, scoreCounter:  ', scoreCounter)
         return -1
     reduce_score()
     highest = max(scoreCounter, key=scoreCounter.get)
     scoreCounter[highest] -= 0.05
-    print('not-random!!!! scoreCounter:  ', scoreCounter)
     return highest
