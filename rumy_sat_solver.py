@@ -52,8 +52,6 @@ def variable_selection(cnf_formula, alpha=False):
         return list(counter.keys())[0]
     return random.choice(list(counter.keys()))
 
-global x
-x = 0
 def backtracking(cnf_formula, partial_assignment, branches=0):
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula)
     cnf_formula, unit_assignment = unit_propagate(cnf_formula)
