@@ -45,6 +45,16 @@ def unit_propagate(cnf_formula):
         unit_clauses = [c for c in cnf_formula if len(c) == 1]
     return cnf_formula, partial_assignment
 
+def get_literals_counter(cnf_formula): ## counts how often every literal is in the formula
+    literals_counter = {}
+    for clause in cnf_formula:
+        for L in clause:
+            if L in literals_counter:
+                literals_counter[L] += 1
+            else:
+                literals_counter[L] = 1
+    return literals_counter
+
 
 def variable_selection(cnf_formula, alpha=False):
     counter = get_literals_counter(cnf_formula)
@@ -56,10 +66,69 @@ def MOMS(): # @Wafaa
     pass
 def VSIDS(): # @Ramon
     pass
-def DLCS(): # @Ned
-    pass
-def DLIS(): # @Ned
-    pass
+
+def DLCS(cnf_formula): # @Ned
+    counter = get_literals_counter(cnf_formula)
+
+    largest_CP_CN = -1
+    choice = None
+    polarity = None
+
+    for L in list(counter.keys()):
+        CP = counter[abs(L)]
+        CN = counter[-abs(L)]
+
+        if CP + CN > largest_CP_CN:
+            choice = abs(L)
+            largest_CP_CN = CP + CN
+            polarity = CP > CN
+    if choice and polarity:
+        return choice
+    elif choice:
+        return -choice
+
+def DLISP(cnf_formula): # @Ned
+    counter = get_literals_counter(cnf_formula)
+
+    largest_CP = -1
+    choice = None
+    polarity = None
+
+    for L in list(counter.keys()):
+        if abs(L) in counter:
+            CP = counter[abs(L)]
+        else:
+            CP = 0
+        
+        if CP > largest_CP:
+            choice = abs(L)
+            largest_CP = CP
+            polarity = CP > counter[-abs(L)]
+    if choice and polarity:
+        return choice
+    elif choice:
+        return -choice
+
+def DLISN(cnf_formula): # @Ned
+    counter = get_literals_counter(cnf_formula)
+
+    largest_CN = -1
+    choice = None
+    polarity = None
+
+    for L in list(counter.keys()):
+        if -abs(L) in counter:
+            CN = counter[-abs(L)]
+        else:
+            CN = 0
+        if CN > largest_CN:
+            choice = abs(L)
+            largest_CN = CN
+            polarity = CN > counter[abs(L)]
+    if choice and polarity:
+        return choice
+    elif choice:
+        return -choice
 
 def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula)
@@ -75,9 +144,11 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
     elif heuristic == 'VSIDS':
         variable = VSIDS()
     elif heuristic == 'DLCS':
-        variable = DLCS()
-    elif heuristic == 'DLIS':
-        variable = DLIS()
+        variable = DLCS(cnf_formula)
+    elif heuristic == 'DLISP':
+        variable = DLISP(cnf_formula)
+    elif heuristic == 'DLISN':
+        variable = DLISN(cnf_formula)
     else:
         variable = variable_selection(cnf_formula, alpha=True)
     
@@ -87,16 +158,6 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
     return sat, branches
 
 
-def get_literals_counter(cnf_formula): ## counts how often every literal is in the formula
-    literals_counter = {}
-    for clause in cnf_formula:
-        for L in clause:
-            if L in literals_counter:
-                literals_counter[L] += 1
-            else:
-                literals_counter[L] = 1
-    return literals_counter
-
 def main(sudoku_path = ''):
     start_time = time.time()
     if (sudoku_path == ''):
@@ -105,7 +166,7 @@ def main(sudoku_path = ''):
     nvars = decode.dimacs_start(sudoku_path)
     startLength = len(nvars)
     clauses.extend(nvars)
-    (solution, branches) = backtracking(clauses, [])
+    (solution, branches) = backtracking(clauses, [], heuristic='DLISN')
     satisfied = False
 
     if solution:
