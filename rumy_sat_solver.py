@@ -52,7 +52,16 @@ def variable_selection(cnf_formula, alpha=False):
         return list(counter.keys())[0]
     return random.choice(list(counter.keys()))
 
-def backtracking(cnf_formula, partial_assignment, branches=0):
+def MOMS(): # @Wafaa
+    pass
+def VSIDS(): # @Ramon
+    pass
+def DLCS(): # @Ned
+    pass
+def DLIS(): # @Ned
+    pass
+
+def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula)
     cnf_formula, unit_assignment = unit_propagate(cnf_formula)
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
@@ -61,11 +70,20 @@ def backtracking(cnf_formula, partial_assignment, branches=0):
     if not cnf_formula:
         return partial_assignment, branches
 
-    variable = variable_selection(cnf_formula, alpha=True)
+    if heuristic == "MOMS":
+        variable = MOMS()
+    elif heuristic == 'VSIDS':
+        variable = VSIDS()
+    elif heuristic == 'DLCS':
+        variable = DLCS()
+    elif heuristic == 'DLIS':
+        variable = DLIS()
+    else:
+        variable = variable_selection(cnf_formula, alpha=True)
     
-    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], branches+1)
+    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], heuristic=heuristic, branches=branches+1)
     if not sat:
-        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable], branches+1)
+        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable], heuristic=heuristic, branches=branches+1)
     return sat, branches
 
 
