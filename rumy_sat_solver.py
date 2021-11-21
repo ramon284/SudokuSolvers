@@ -89,7 +89,7 @@ def variable_selection(cnf_formula, alpha=False):
 
 def get_most_occurent_literal(formula): # @Wafaa
     counter = get_literals_counter(formula)
-    return max(counter.items(), key=operator.itemgetter(1))[0]
+    return min(counter.items(), key=operator.itemgetter(1))[0]
 
 def get_clause_size(clause): # @Wafaa
     counter = 0
@@ -98,8 +98,8 @@ def get_clause_size(clause): # @Wafaa
     return counter
 
 def minClauses(cnf_formula): # @Wafaa
-    minClauses = [];
-    size = -1;
+    minClauses = []
+    size = -1
     for clause in cnf_formula:
         clauseSize = get_clause_size(clause)
         # Either the current clause is smaller
@@ -111,8 +111,27 @@ def minClauses(cnf_formula): # @Wafaa
             minClauses.append(clause)
     return minClauses
 
+def maximize_function(min_clauses, k=0.5):
+    best_literal = None
+    Fmax = -1
+
+    literals = get_literals_counter(min_clauses)
+    
+    for literal in list(literals.keys()):
+        Fx = literals[abs(literal)] if abs(literal) in literals else 0
+        Fxp = literals[-abs(literal)] if -abs(literal) in literals else 0
+
+        F = (Fx + Fxp) * (2**k) + Fx * Fxp
+
+        if F > Fmax:
+            best_literal = literal
+            Fmax = F
+
+    return best_literal
+
 def MOMS(cnf_formula): # @Wafaa
     minc = minClauses(cnf_formula)
+    return maximize_function(minc)
     return get_most_occurent_literal(minc)
 
 def VSIDS(cnf_formula): # @Ramon
@@ -244,4 +263,4 @@ def main(sudoku_path = '', heur = None , printGrid = False):
 
 
 if __name__ == '__main__':
-    main('')
+    main(heur='MOMS')
