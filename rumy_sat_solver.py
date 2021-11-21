@@ -111,7 +111,7 @@ def minClauses(cnf_formula): # @Wafaa
             minClauses.append(clause)
     return minClauses
 
-def maximize_function(min_clauses, k=0.5):
+def maximize_function(min_clauses, k=0.5): # @Ned
     best_literal = None
     Fmax = -1
 
@@ -132,7 +132,6 @@ def maximize_function(min_clauses, k=0.5):
 def MOMS(cnf_formula): # @Wafaa
     minc = minClauses(cnf_formula)
     return maximize_function(minc)
-    return get_most_occurent_literal(minc)
 
 def VSIDS(cnf_formula): # @Ramon
     variable = vsids.return_highest_score() ## get highest scoring variable
