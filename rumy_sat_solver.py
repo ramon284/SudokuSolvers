@@ -4,6 +4,7 @@ import time
 import dimacs_decoder as decode
 import sudoku_printer as sp
 from copy import deepcopy
+import operator
 
 def remove_unit_literals(cnf_formula, unit):
     new_clauses = []
@@ -55,15 +56,40 @@ def get_literals_counter(cnf_formula): ## counts how often every literal is in t
                 literals_counter[L] = 1
     return literals_counter
 
-
 def variable_selection(cnf_formula, alpha=False):
     counter = get_literals_counter(cnf_formula)
     if alpha:
         return list(counter.keys())[0]
     return random.choice(list(counter.keys()))
 
-def MOMS(): # @Wafaa
-    pass
+def get_most_occurent_literal(formula): # @Wafaa
+    counter = get_literals_counter(formula)
+    return max(counter.items(), key=operator.itemgetter(1))[0]
+
+def get_clause_size(clause): # @Wafaa
+    counter = 0
+    for literal in clause:
+        counter = counter + 1
+    return counter
+
+def minClauses(cnf_formula): # @Wafaa
+    minClauses = [];
+    size = -1;
+    for clause in cnf_formula:
+        clauseSize = get_clause_size(clause)
+        # Either the current clause is smaller
+        if size == -1 or clauseSize < size:
+            minClauses = [clause]
+            size = clauseSize
+        # Or it is of minimum size as well
+        elif clauseSize == size:
+            minClauses.append(clause)
+    return minClauses
+
+def MOMS(cnf_formula): # @Wafaa
+    minc = minClauses(cnf_formula)
+    return get_most_occurent_literal(minc)
+
 def VSIDS(): # @Ramon
     pass
 
@@ -140,7 +166,7 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
         return partial_assignment, branches
 
     if heuristic == "MOMS":
-        variable = MOMS()
+        variable = MOMS(cnf_formula)
     elif heuristic == 'VSIDS':
         variable = VSIDS()
     elif heuristic == 'DLCS':
@@ -168,7 +194,7 @@ def main(sudoku_path = '', heur = None):
     nvars = decode.dimacs_start(sudoku_path)
     startLength = len(nvars)
     clauses.extend(nvars)
-    (solution, branches) = backtracking(clauses, [], heuristic='DLISN')
+    (solution, branches) = backtracking(clauses, [], heuristic='MOMS')
     satisfied = False
 
     if solution:
