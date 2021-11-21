@@ -44,7 +44,6 @@ def remove_unit_literals(cnf_formula, unit): ## take all clauses + one literal
         return new_clauses
 
             
-
 def remove_pure_literals(cnf_formula): 
     counter = get_literals_counter(cnf_formula)
     partial_assignment = []
@@ -52,7 +51,6 @@ def remove_pure_literals(cnf_formula):
     for pure_literal in pure_literals:
         cnf_formula = remove_unit_literals(cnf_formula, pure_literal)
     partial_assignment += pure_literals
-
     return cnf_formula, partial_assignment
 
 
@@ -237,8 +235,8 @@ def main(sudoku_path = '', heur = None , printGrid = False):
     heuristic = heur
     start_time = time.time()
     if (sudoku_path == ''):
-        sudoku_path = 'dimacs/sudoku/sudoku-example.txt'
-    clauses = decode.dimacs_rules("dimacs/rulesets/sudoku-rules.txt")
+        sudoku_path = 'src/dimacs/sudoku/sudoku-example.txt'
+    clauses = decode.dimacs_rules('src/dimacs/rulesets/sudoku-rules.txt')
     nvars = decode.dimacs_start(sudoku_path)
     startLength = len(nvars)
     clauses.extend(nvars)
@@ -246,7 +244,6 @@ def main(sudoku_path = '', heur = None , printGrid = False):
     (solution, branches) = backtracking(clauses, [], heuristic=heuristic)
 
     satisfied = False
-
     if solution:
         solution.sort(key=lambda x: abs(x))
         if printGrid == True : sp.grid_printer(solution, 9)
@@ -260,6 +257,5 @@ def main(sudoku_path = '', heur = None , printGrid = False):
     print("--- %s branches ---" % (branches))
     return endtime, satisfied, startLength, branches
 
-
 if __name__ == '__main__':
-    main(heur='MOMS')
+    main(heur=None)

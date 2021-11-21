@@ -2,16 +2,16 @@ import os
 import rumy_sat_solver as SAT
 import xlsxwriter
 
-directoryName = '1000sudokus'
+directoryName = 'src/dimacs/1000sudokus/'
 directory = os.fsencode(directoryName) ## map containing our sudokus
     
 sudokuList = [] ## put every filename in a list  
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
     if filename.endswith(".txt"):
-        sudokuList.append(directoryName+'\\'+filename)
+        sudokuList.append(directoryName+'/'+filename)
 
-workbook = xlsxwriter.Workbook('SATResults.xlsx')
+workbook = xlsxwriter.Workbook('src/statistics_data/SATResults.xlsx')
 heuristiclist = [None, 'VSIDS', 'DLCS', 'DLISP', 'DLISN', 'MOMS']  
 for heuristic in heuristiclist:
     maxNumber = 0 
@@ -50,5 +50,3 @@ for heuristic in heuristiclist:
         i += 1
     
 workbook.close()
-
-
