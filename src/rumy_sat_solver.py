@@ -237,8 +237,8 @@ def main(sudoku_path = '', heur = None , printGrid = False):
     heuristic = heur
     start_time = time.time()
     if (sudoku_path == ''):
-        sudoku_path = 'sudoku-example.txt'
-    clauses = decode.dimacs_rules("sudoku-rules.txt")
+        sudoku_path = 'dimacs/sudoku/sudoku-example.txt'
+    clauses = decode.dimacs_rules("dimacs/rulesets/sudoku-rules.txt")
     nvars = decode.dimacs_start(sudoku_path)
     startLength = len(nvars)
     clauses.extend(nvars)
