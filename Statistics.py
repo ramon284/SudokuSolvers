@@ -11,17 +11,21 @@ for file in os.listdir(directory):
     if filename.endswith(".txt"):
         sudokuList.append(directoryName+'\\'+filename)
 
+workbook = xlsxwriter.Workbook('SATResults.xlsx')
+heuristiclist = [None, 'VSIDS'] ## we can loop through this list 
+## for heuristic in heuristiclist:
 timeList = []
 satList = []
 lengthList = []
+heuristic = None
 for sudoku in sudokuList:
-    time, satisfied, startLength = SAT.main(sudoku) ## solve the sudoku
+    time, satisfied, startLength = SAT.main(sudoku, heuristic) ## solve the sudoku
     timeList.append(time)
     satList.append(satisfied) ## keep track of time, wether or not is was solved, and how many numbers we start with
     lengthList.append(startLength)
     
-workbook = xlsxwriter.Workbook('BasicSATResults.xlsx')
-worksheet = workbook.add_worksheet('1') ## make an excel file, write the headers
+
+worksheet = workbook.add_worksheet('heur: ',heuristic) ## make an excel file, write the headers
 worksheet.write('A1', 'Sudoku number')
 worksheet.write('B1', 'startLength')
 worksheet.write('C1', 'Time')
@@ -36,4 +40,5 @@ for number, time, satisfied, startLen in zip(sudokuList, timeList, satList, leng
     i += 1
     
 workbook.close()
+
 

@@ -158,7 +158,9 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
     return sat, branches
 
 
-def main(sudoku_path = ''):
+def main(sudoku_path = '', heur = None):
+    global heuristic
+    heuristic = heur
     start_time = time.time()
     if (sudoku_path == ''):
         sudoku_path = 'sudoku-example.txt'
