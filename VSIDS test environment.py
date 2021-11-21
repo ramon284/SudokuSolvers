@@ -5,7 +5,7 @@ import sudoku_printer as sp
 
 ## this function removes True clauses by checking for a certain literal
 
-def boolean_constraint_propagation(cnf_formula, unit, scoreCounter): ## take all clauses + one literal
+def remove_unit_literals(cnf_formula, unit): ## take all clauses + one literal
     new_clauses = []
     vsids_list = [] ##vsids keeps track of all clauses containing our literal, both T and F
     for cnf in cnf_formula: ## for every clause in formula
@@ -19,20 +19,20 @@ def boolean_constraint_propagation(cnf_formula, unit, scoreCounter): ## take all
                 vsids_flatten = [item for sublist in vsids_list for item in sublist]
                 vsids_set = set(vsids_flatten)
                 vsids_set.remove(unit)
-                add_score(scoreCounter, vsids_set)
-                print('score added in bcp')
+                add_score(vsids_set)
                 return -1
             new_clauses.append(cls) ## otherwise, remove the False literal and keep the others.
         else:
             new_clauses.append(cnf) ## if clause not in literal, just keep the clause.
     return new_clauses
 
-def add_score(scoreCounter, literals): ## adds score to unsolvable literal (has to be T and F at the same time)
+def add_score(literals): ## adds score to unsolvable literal (has to be T and F at the same time)
+    literals = list({abs(x) for x in literals}) ## make negative values positive, remove duplicates.
     for lit in literals:
+        lit = abs(lit)
         scoreCounter[lit]=scoreCounter.get(lit,0)+1
-        #scoreCounter[lit] += 1
     
-def reduce_score(scoreCounter, reduction = 0.95): ## reduce the score of a variable every scoring iteration
+def reduce_score(reduction = 0.95): ## reduce the score of a variable every scoring iteration
     for score in scoreCounter:
         if(scoreCounter[score] != 0):
             scoreCounter[score] = round(scoreCounter[score]*reduction, 3)
@@ -41,29 +41,29 @@ def return_highest_score(scoreCounter, cnf_formula):
     if(not scoreCounter):
         print('random select')
         return variable_selection(cnf_formula)
-    reduce_score(scoreCounter)
+    reduce_score()
     highest = max(scoreCounter, key=scoreCounter.get)
     scoreCounter[highest] -= 0.05
     return highest
     
     
-def remove_pure_literals(cnf_formula, scoreCounter): 
+def remove_pure_literals(cnf_formula): 
     counter = get_literals_counter(cnf_formula)
     partial_assignment = []
     pure_literals = [element for element in counter if -1 * element not in counter]
     for pure_literal in pure_literals:
-        cnf_formula = boolean_constraint_propagation(cnf_formula, pure_literal, scoreCounter)
+        cnf_formula = remove_unit_literals(cnf_formula, pure_literal)
     partial_assignment += pure_literals
 
     return cnf_formula, partial_assignment
 
 
-def unit_propagate(cnf_formula, scoreCounter):
+def unit_propagate(cnf_formula):
     partial_assignment = []
     unit_clauses = [c for c in cnf_formula if len(c) == 1]
     while len(unit_clauses) > 0:
         unit_literal = unit_clauses[0]
-        cnf_formula = boolean_constraint_propagation(cnf_formula, unit_literal[0], scoreCounter)
+        cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0])
         partial_assignment += [unit_literal[0]]
         if cnf_formula == -1:
             return -1, []
@@ -78,9 +78,9 @@ def variable_selection(cnf_formula):
     return random.choice(list(counter.keys()))
 
 
-def backtracking(cnf_formula, partial_assignment, scoreCounter = {}):
-    cnf_formula, pure_assignment = remove_pure_literals(cnf_formula, scoreCounter)
-    cnf_formula, unit_assignment = unit_propagate(cnf_formula, scoreCounter)
+def backtracking(cnf_formula, partial_assignment):
+    cnf_formula, pure_assignment = remove_pure_literals(cnf_formula)
+    cnf_formula, unit_assignment = unit_propagate(cnf_formula)
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
     if cnf_formula == -1:
         return []
@@ -91,9 +91,12 @@ def backtracking(cnf_formula, partial_assignment, scoreCounter = {}):
     variable = return_highest_score(scoreCounter, cnf_formula) ## uses scoreCounting from VSIDS
     print('score:', scoreCounter)
     print('variable:', variable)
-    sat = backtracking(boolean_constraint_propagation(cnf_formula, variable, scoreCounter), partial_assignment + [variable], scoreCounter)
+    if(variable in scoreCounter):
+        scoreCounter[variable] -= 0.05
+        if scoreCounter[variable] <= 0: del scoreCounter[variable]
+    sat = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable])
     if not sat:
-        sat = backtracking(boolean_constraint_propagation(cnf_formula, -variable, scoreCounter), partial_assignment + [-variable], scoreCounter)
+        sat = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable])
     return sat
 
 
@@ -108,6 +111,8 @@ def get_literals_counter(cnf_formula): ## counts how often every literal is in t
     return literals_counter
 
 def main(sudoku_path = ''):
+    global scoreCounter
+    scoreCounter = {}
     start_time = time.time()
     if (sudoku_path == ''):
         sudoku_path = 'sudoku-example.txt'

@@ -3,21 +3,45 @@ import random
 import time
 import dimacs_decoder as decode
 import sudoku_printer as sp
+import VSIDS_functions as vsids
 from copy import deepcopy
 
-def remove_unit_literals(cnf_formula, unit):
+
+def remove_unit_literals(cnf_formula, unit): ## take all clauses + one literal
     new_clauses = []
-    for cnf in cnf_formula:
-        if unit in cnf:
-            continue
-        if (unit * -1) in cnf:
-            cls = [x for x in cnf if (x != (unit * -1))]
-            if (len(cls) == 0): 
-                return -1
-            new_clauses.append(cls)
-        else:
-            new_clauses.append(cnf)
-    return new_clauses
+    if(heuristic == None):
+        for cnf in cnf_formula:
+            if unit in cnf:
+                continue
+            if (unit * -1) in cnf:
+                cls = [x for x in cnf if (x != (unit * -1))]
+                if (len(cls) == 0): 
+                    return -1
+                new_clauses.append(cls)
+            else:
+                new_clauses.append(cnf)
+        return new_clauses
+    
+    elif(heuristic == 'VSIDS'):
+        vsids_list = [] ##vsids keeps track of all clauses containing our literal, both T and F
+        for cnf in cnf_formula: ## for every clause in formula
+            if unit in cnf:     ## if literal in clause, clause = True so remove it
+                vsids_list.append(cnf)
+                continue
+            if (unit * -1) in cnf: ## if negation of our literal is found, make list of all other literals in clause
+                vsids_list.append(cnf)
+                cls = [x for x in cnf if (x != (unit * -1))]
+                if (len(cls) == 0): ## no other literals? Than clause = False, thus return -1  
+                    vsids_flatten = [item for sublist in vsids_list for item in sublist]
+                    vsids_set = set(vsids_flatten)
+                    vsids_set.remove(unit)
+                    vsids.add_score(vsids_set)
+                    return -1
+                new_clauses.append(cls) ## otherwise, remove the False literal and keep the others.
+            else:
+                new_clauses.append(cnf) ## if clause not in literal, just keep the clause.
+        return new_clauses
+
             
 
 def remove_pure_literals(cnf_formula): 
@@ -54,8 +78,14 @@ def variable_selection(cnf_formula, alpha=False):
 
 def MOMS(): # @Wafaa
     pass
-def VSIDS(): # @Ramon
-    pass
+def VSIDS(cnf_formula): # @Ramon
+    variable = vsids.return_highest_score() ## get highest scoring variable
+    if(variable == -1): 
+        variable = variable_selection(cnf_formula) ## if no scores are in the scoreboard, pick a random variable
+    if(variable in vsids.scoreCounter):
+        vsids.scoreCounter[variable] -= 0.2 ##reduce score of chosen variable a bit more than the other variables.
+        if vsids.scoreCounter[variable] <= 0: del vsids.scoreCounter[variable]
+    return variable
 def DLCS(): # @Ned
     pass
 def DLIS(): # @Ned
@@ -73,7 +103,7 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
     if heuristic == "MOMS":
         variable = MOMS()
     elif heuristic == 'VSIDS':
-        variable = VSIDS()
+        variable = VSIDS(cnf_formula)
     elif heuristic == 'DLCS':
         variable = DLCS()
     elif heuristic == 'DLIS':
@@ -97,7 +127,9 @@ def get_literals_counter(cnf_formula): ## counts how often every literal is in t
                 literals_counter[L] = 1
     return literals_counter
 
-def main(sudoku_path = ''):
+def main(sudoku_path = '', heur = None):
+    global heuristic
+    heuristic = heur
     start_time = time.time()
     if (sudoku_path == ''):
         sudoku_path = 'sudoku-example.txt'
@@ -105,7 +137,7 @@ def main(sudoku_path = ''):
     nvars = decode.dimacs_start(sudoku_path)
     startLength = len(nvars)
     clauses.extend(nvars)
-    (solution, branches) = backtracking(clauses, [])
+    (solution, branches) = backtracking(clauses, [], heuristic)
     satisfied = False
 
     if solution:
@@ -122,4 +154,4 @@ def main(sudoku_path = ''):
 
 
 if __name__ == '__main__':
-    main()
+    main('')
