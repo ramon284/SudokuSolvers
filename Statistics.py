@@ -43,3 +43,4 @@ for number, time, satisfied, startLen in zip(sudokuList, timeList, satList, leng
     
 workbook.close()
 
+
