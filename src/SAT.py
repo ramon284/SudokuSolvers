@@ -87,25 +87,51 @@ if __name__ == '__main__':
     except Exception as e:
         print("Please provide the path of the input file relative to SAT.py")
         exit()
-
+    
+    t1, t2 = 0, 0
     solution, branches = None, None
     # Vanilla DPLL
     if arguments.S1:
+        print("NO HEURISTIC")
+        t1 = time.time()
         (solution, branches) = backtracking(clauses)
+        t2 = time.time()
     # DLCS
     if arguments.S2:
+        print("DLCS")
+        t1 = time.time()
         (solution, branches) = backtracking(clauses, heuristic="DLCS")
+        t2 = time.time()
     # DLISN
     if arguments.S3:
+        print("DLIS with NEGATIVE")
+        t1 = time.time()
         (solution, branches) = backtracking(clauses, heuristic="DLISN")
+        t2 = time.time()
     # DLISP
     if arguments.S4:
+        print("DLIS with POSITIVE")
+        t1 = time.time()
         (solution, branches) = backtracking(clauses, heuristic="DLISP")
+        t2 = time.time()
     # MOMS
     if arguments.S5:
+        print("MOMS")
+        t1 = time.time()
         (solution, branches) = backtracking(clauses, heuristic="MOMS", moms_k=0.7)
+        t2 = time.time()
     # VSIDS
     if arguments.S6:
-        (solution, branches) = backtracking(clauses, heuristic="VSIDS")    
+        print("VSIDS")
+        t1 = time.time()
+        (solution, branches) = backtracking(clauses, heuristic="VSIDS")
+        t2 = time.time()
 
+    if solution:
+        print(f"--- Time elapsed: {t2-t1} ---")
+        print(f"--- Number of branches: {branches} ---")
+        print("SAT")
+    else:
+        print(f"--- Time elapsed: {t2-t1} ---")
+        print("UNSAT")
     
