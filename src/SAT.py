@@ -2,11 +2,11 @@ import time
 import argparse
 import dimacs_decoder as decode
 import sudoku_printer as sp
-from cnf_utils import remove_unit_literals, remove_pure_literals, variable_selection, unit_propagate
-from heuristics import DLCS, DLISN, DLISP, MOMS, VSIDSContainer
+from cnf_utils import remove_unit_literals, remove_pure_literals, unit_propagate
+from heuristics import DLCS, DLISN, DLISP, MOMS, VSIDSContainer, variable_selection
 
-def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None, branches=0, container=None):
-    if(container == None and heuristic == 'VSIDS'):
+def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=0.5, branches=0, container=None):
+    if(container == None):
         container = VSIDSContainer({})
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula, heuristic=heuristic)
     cnf_formula, unit_assignment = unit_propagate(cnf_formula, heuristic=heuristic, VSIDSContainer=container)
@@ -31,42 +31,17 @@ def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None,
     else:
         print("No such heuristic...")
         exit()
+
+    # TODO We need to check how branching is counted
+    # Maybe think about branching and recursive depth as different measures
+    #???
+    branches += 1
     
-    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k, container=container)
+    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], heuristic=heuristic, branches=branches, moms_k=moms_k, container=container)
+
     if not sat:
-        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k, container=container)
+        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable], heuristic=heuristic, branches=branches, moms_k=moms_k, container=container)
     return sat, branches
-
-def main(sudoku_path = '', heuristic = None , printGrid = False, moms_k=None):
-    start_time = time.time()
-    if (sudoku_path == ''):
-        sudoku_path = 'dimacs/sudoku/sudoku-example.txt'
-    clauses = decode.dimacs_rules('dimacs/rulesets/sudoku-rules.txt')
-    nvars = decode.dimacs_start(sudoku_path)
-    startLength = len(nvars)
-    clauses.extend(nvars)
-    
-
-    (solution, branches) = backtracking(clauses, heuristic=heuristic, moms_k=moms_k)
-
-    satisfied = False
-    if solution:
-        solution.sort(key=lambda x: abs(x))
-        if printGrid == True : sp.grid_printer(solution, 9)
-        print('heuristic used: ',heuristic)
-        print('s SATISFIABLE')
-        satisfied = True
-    else:
-        print('s UNSATISFIABLE')
-    endtime = (time.time() - start_time)
-    print("--- %s seconds ---" % (endtime))
-    print("--- %s branches ---" % (branches))
-    return endtime, satisfied, startLength, branches
-
-# if __name__ == '__main__':
-#     # Possible heuristics
-#     # DLCS, DLISN, DLISP, MOMS, VSIDS
-#     main(heuristic='VSIDS', moms_k=0.3)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog="SAT")
@@ -85,6 +60,7 @@ if __name__ == '__main__':
     try:
         clauses = decode.dimacs_rules(arguments.filename)
     except Exception as e:
+        print(arguments.filename)
         print("Please provide the path of the input file relative to SAT.py")
         exit()
     

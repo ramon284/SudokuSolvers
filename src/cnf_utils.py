@@ -65,7 +65,7 @@ def get_literals_counter(cnf_formula): ## counts how often every literal is in t
 def variable_selection(cnf_formula, alpha=False):
     counter = get_literals_counter(cnf_formula)
     if alpha:
-        return list(counter.keys())[0]
+        return sorted(list(counter.keys()))[0]
     return random.choice(list(counter.keys()))
 
 
