@@ -1,9 +1,8 @@
 from cnf_utils import  variable_selection, get_literals_counter, minClauses
 
 class VSIDSContainer:
-    def __init__(self):
-        self.score_counter = {}
-
+    def __init__(self, score_counter):
+        self.score_counter = score_counter
 
     def remove_unit_literals_VSIDS(self, cnf_formula, unit):
         new_clauses = []
@@ -35,22 +34,22 @@ class VSIDSContainer:
     def reduce_score(self, reduction = 0.95): ## reduce the score of a variable every scoring iteration
         for score in self.score_counter:
             if(self.score_counter[score] != 0):
-                self.score_counter[score] = round(scoreCounter[score]*reduction, 3)
+                self.score_counter[score] = round(self.score_counter[score]*reduction, 3)
 
     def return_highest_score(self):
         if(not self.score_counter):
             return -1
         self.reduce_score()
         highest = max(self.score_counter, key=self.score_counter.get)
-        self.score_counter[highest] -= 0.05
+        self.score_counter[highest] -= 0.4
         return highest
 
     def VSIDS(self, cnf_formula): # @Ramon
+        print(self.score_counter)
         variable = self.return_highest_score() ## get highest scoring variable
         if(variable == -1): 
             variable = variable_selection(cnf_formula) ## if no scores are in the scoreboard, pick a random variable
         if(variable in self.score_counter):
-            self.score_counter[variable] -= 0.2 ##reduce score of chosen variable a bit more than the other variables.
             if self.score_counter[variable] <= 0: del self.score_counter[variable]
         return variable
 
