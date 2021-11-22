@@ -1,1 +1,1 @@
-xslxwriter
+xlsxwriter
