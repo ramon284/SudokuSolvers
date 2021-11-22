@@ -88,7 +88,7 @@ def remove_unit_literals(cnf_formula, unit, heuristic=None): ## take all clauses
             if (unit * -1) in cnf: ## if negation of our literal is found, make list of all other literals in clause
                 vsids_list.append(cnf)
                 cls = [x for x in cnf if (x != (unit * -1))]
-                if (len(cls) == 0): ## no other literals? Than clause = False, thus return -1  
+                if (len(cls) == 0): ## no other literals? Than clause = False, thus return -1 
                     vsids_flatten = [item for sublist in vsids_list for item in sublist]
                     vsids_set = set(vsids_flatten)
                     vsids_set.remove(unit)

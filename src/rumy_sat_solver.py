@@ -6,7 +6,7 @@ from heuristics import DLCS, DLISN, DLISP, MOMS, VSIDS
 
 def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None, branches=0):
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula, heuristic=heuristic)
-    cnf_formula, unit_assignment = unit_propagate(cnf_formula)
+    cnf_formula, unit_assignment = unit_propagate(cnf_formula, heuristic=heuristic)
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
     if cnf_formula == -1:
         return [], branches
@@ -59,4 +59,4 @@ def main(sudoku_path = '', heuristic = None , printGrid = False, moms_k=None):
 if __name__ == '__main__':
     # Possible heuristics
     # DLCS, DLISN, DLISP, MOMS, VSIDS
-    main(heuristic='MOMS', moms_k=0.3)
+    main(heuristic='VSIDS', moms_k=0.3)
