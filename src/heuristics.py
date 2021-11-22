@@ -112,6 +112,6 @@ def maximize_function(min_clauses, k=0.5): # @Ned
 
     return best_literal
 
-def MOMS(cnf_formula): # @Wafaa
+def MOMS(cnf_formula, k=0.5): # @Wafaa
     minc = minClauses(cnf_formula)
-    return maximize_function(minc)
+    return maximize_function(minc, k=k)

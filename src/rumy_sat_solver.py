@@ -4,7 +4,7 @@ import sudoku_printer as sp
 from cnf_utils import remove_unit_literals, remove_pure_literals, variable_selection, unit_propagate
 from heuristics import DLCS, DLISN, DLISP, MOMS, VSIDS
 
-def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
+def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None, branches=0):
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula, heuristic=heuristic)
     cnf_formula, unit_assignment = unit_propagate(cnf_formula)
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
@@ -14,7 +14,7 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
         return partial_assignment, branches
 
     if heuristic == "MOMS":
-        variable = MOMS(cnf_formula)
+        variable = MOMS(cnf_formula, k=moms_k)
     elif heuristic == 'VSIDS':
         variable = VSIDS(cnf_formula)
     elif heuristic == 'DLCS':
@@ -26,12 +26,12 @@ def backtracking(cnf_formula, partial_assignment, heuristic=None, branches=0):
     else:
         variable = variable_selection(cnf_formula, alpha=True)
     
-    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable, heuristic=heuristic), partial_assignment + [variable], heuristic=heuristic, branches=branches+1)
+    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable, heuristic=heuristic), partial_assignment + [variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k)
     if not sat:
-        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable, heuristic=heuristic), partial_assignment + [-variable], heuristic=heuristic, branches=branches+1)
+        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable, heuristic=heuristic), partial_assignment + [-variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k)
     return sat, branches
 
-def main(sudoku_path = '', heuristic = None , printGrid = False):
+def main(sudoku_path = '', heuristic = None , printGrid = False, moms_k=None):
     start_time = time.time()
     if (sudoku_path == ''):
         sudoku_path = 'dimacs/sudoku/sudoku-example.txt'
@@ -40,7 +40,7 @@ def main(sudoku_path = '', heuristic = None , printGrid = False):
     startLength = len(nvars)
     clauses.extend(nvars)
 
-    (solution, branches) = backtracking(clauses, [], heuristic=heuristic)
+    (solution, branches) = backtracking(clauses, heuristic=heuristic, moms_k=moms_k)
 
     satisfied = False
     if solution:
@@ -59,4 +59,4 @@ def main(sudoku_path = '', heuristic = None , printGrid = False):
 if __name__ == '__main__':
     # Possible heuristics
     # DLCS, DLISN, DLISP, MOMS, VSIDS
-    main(heuristic='VSIDS')
+    main(heuristic='MOMS', moms_k=0.3)
