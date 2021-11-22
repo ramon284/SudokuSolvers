@@ -1,6 +1,7 @@
 import random
 import operator
 
+
 def minClauses(cnf_formula): # @Wafaa
     minClauses = []
     size = -1
@@ -21,12 +22,15 @@ def get_clause_size(clause): # @Wafaa
         counter = counter + 1
     return counter
 
-def unit_propagate(cnf_formula, heuristic=None):
+def unit_propagate(cnf_formula, VSIDSContainer, heuristic):
     partial_assignment = []
     unit_clauses = [c for c in cnf_formula if len(c) == 1]
     while len(unit_clauses) > 0:
         unit_literal = unit_clauses[0]
-        cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0], heuristic=heuristic)
+        if heuristic == 'VSIDS':
+            cnf_formula = VSIDSContainer.remove_unit_literals_VSIDS(cnf_formula, unit_literal[0])
+        else:
+            cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0])
         partial_assignment += [unit_literal[0]]
         if cnf_formula == -1:
             return -1, []
@@ -64,37 +68,17 @@ def variable_selection(cnf_formula, alpha=False):
         return list(counter.keys())[0]
     return random.choice(list(counter.keys()))
 
-def remove_unit_literals(cnf_formula, unit, heuristic=None): ## take all clauses + one literal
+
+def remove_unit_literals(cnf_formula, unit): ## take all clauses + one literal
     new_clauses = []
-    if(heuristic != 'VSIDS'):
-        for cnf in cnf_formula:
-            if unit in cnf:
-                continue
-            if (unit * -1) in cnf:
-                cls = [x for x in cnf if (x != (unit * -1))]
-                if (len(cls) == 0): 
-                    return -1
-                new_clauses.append(cls)
-            else:
-                new_clauses.append(cnf)
-        return new_clauses
-    
-    elif(heuristic == 'VSIDS'):
-        vsids_list = [] ##vsids keeps track of all clauses containing our literal, both T and F
-        for cnf in cnf_formula: ## for every clause in formula
-            if unit in cnf:     ## if literal in clause, clause = True so remove it
-                vsids_list.append(cnf)
-                continue
-            if (unit * -1) in cnf: ## if negation of our literal is found, make list of all other literals in clause
-                vsids_list.append(cnf)
-                cls = [x for x in cnf if (x != (unit * -1))]
-                if (len(cls) == 0): ## no other literals? Than clause = False, thus return -1 
-                    vsids_flatten = [item for sublist in vsids_list for item in sublist]
-                    vsids_set = set(vsids_flatten)
-                    vsids_set.remove(unit)
-                    add_score(vsids_set)
-                    return -1
-                new_clauses.append(cls) ## otherwise, remove the False literal and keep the others.
-            else:
-                new_clauses.append(cnf) ## if clause not in literal, just keep the clause.
-        return new_clauses
+    for cnf in cnf_formula:
+        if unit in cnf:
+            continue
+        if (unit * -1) in cnf:
+            cls = [x for x in cnf if (x != (unit * -1))]
+            if (len(cls) == 0): 
+                return -1
+            new_clauses.append(cls)
+        else:
+            new_clauses.append(cnf)
+    return new_clauses

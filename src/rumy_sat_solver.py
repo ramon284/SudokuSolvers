@@ -2,11 +2,12 @@ import time
 import dimacs_decoder as decode
 import sudoku_printer as sp
 from cnf_utils import remove_unit_literals, remove_pure_literals, variable_selection, unit_propagate
-from heuristics import DLCS, DLISN, DLISP, MOMS, VSIDS
+from heuristics import DLCS, DLISN, DLISP, MOMS, VSIDSContainer
 
 def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None, branches=0):
+    container = VSIDSContainer()
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula, heuristic=heuristic)
-    cnf_formula, unit_assignment = unit_propagate(cnf_formula, heuristic=heuristic)
+    cnf_formula, unit_assignment = unit_propagate(cnf_formula, heuristic=heuristic, VSIDSContainer=container)
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
     if cnf_formula == -1:
         return [], branches
@@ -16,7 +17,8 @@ def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None,
     if heuristic == "MOMS":
         variable = MOMS(cnf_formula, k=moms_k)
     elif heuristic == 'VSIDS':
-        variable = VSIDS(cnf_formula)
+        variable = container.VSIDS(cnf_formula)
+        #variable = VSIDS(cnf_formula)
     elif heuristic == 'DLCS':
         variable = DLCS(cnf_formula)
     elif heuristic == 'DLISP':
@@ -26,9 +28,9 @@ def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None,
     else:
         variable = variable_selection(cnf_formula, alpha=True)
     
-    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable, heuristic=heuristic), partial_assignment + [variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k)
+    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k)
     if not sat:
-        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable, heuristic=heuristic), partial_assignment + [-variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k)
+        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k)
     return sat, branches
 
 def main(sudoku_path = '', heuristic = None , printGrid = False, moms_k=None):

@@ -1,35 +1,58 @@
 from cnf_utils import  variable_selection, get_literals_counter, minClauses
 
-global scoreCounter
-scoreCounter = {}
+class VSIDSContainer:
+    def __init__(self):
+        self.score_counter = {}
 
-def add_score(literals): ## adds score to unsolvable literal (has to be T and F at the same time)
-    literals = list({abs(x) for x in literals}) ## make negative values positive, remove duplicates.
-    for lit in literals:
-        lit = abs(lit)
-        scoreCounter[lit]=scoreCounter.get(lit,0)+1
+
+    def remove_unit_literals_VSIDS(self, cnf_formula, unit):
+        new_clauses = []
+        vsids_list = [] ##vsids keeps track of all clauses containing our literal, both T and F
+        for cnf in cnf_formula: ## for every clause in formula
+            if unit in cnf:     ## if literal in clause, clause = True so remove it
+                vsids_list.append(cnf)
+                continue
+            if (unit * -1) in cnf: ## if negation of our literal is found, make list of all other literals in clause
+                vsids_list.append(cnf)
+                cls = [x for x in cnf if (x != (unit * -1))]
+                if (len(cls) == 0): ## no other literals? Than clause = False, thus return -1 
+                    vsids_flatten = [item for sublist in vsids_list for item in sublist]
+                    vsids_set = set(vsids_flatten)
+                    vsids_set.remove(unit)
+                    self.add_score(vsids_set)
+                    return -1
+                new_clauses.append(cls) ## otherwise, remove the False literal and keep the others.
+            else:
+                new_clauses.append(cnf) ## if clause not in literal, just keep the clause.
+        return new_clauses
+
+    def add_score(self, literals): ## adds score to unsolvable literal (has to be T and F at the same time)
+        literals = list({abs(x) for x in literals}) ## make negative values positive, remove duplicates.
+        for lit in literals:
+            lit = abs(lit)
+            self.score_counter[lit]=self.score_counter.get(lit,0)+1
         
-def reduce_score(reduction = 0.95): ## reduce the score of a variable every scoring iteration
-    for score in scoreCounter:
-        if(scoreCounter[score] != 0):
-            scoreCounter[score] = round(scoreCounter[score]*reduction, 3)
+    def reduce_score(self, reduction = 0.95): ## reduce the score of a variable every scoring iteration
+        for score in self.score_counter:
+            if(self.score_counter[score] != 0):
+                self.score_counter[score] = round(scoreCounter[score]*reduction, 3)
 
-def return_highest_score():
-    if(not scoreCounter):
-        return -1
-    reduce_score()
-    highest = max(scoreCounter, key=scoreCounter.get)
-    scoreCounter[highest] -= 0.05
-    return highest
+    def return_highest_score(self):
+        if(not self.score_counter):
+            return -1
+        self.reduce_score()
+        highest = max(self.score_counter, key=self.score_counter.get)
+        self.score_counter[highest] -= 0.05
+        return highest
 
-def VSIDS(cnf_formula): # @Ramon
-    variable = return_highest_score() ## get highest scoring variable
-    if(variable == -1): 
-        variable = variable_selection(cnf_formula) ## if no scores are in the scoreboard, pick a random variable
-    if(variable in scoreCounter):
-        scoreCounter[variable] -= 0.2 ##reduce score of chosen variable a bit more than the other variables.
-        if scoreCounter[variable] <= 0: del scoreCounter[variable]
-    return variable
+    def VSIDS(self, cnf_formula): # @Ramon
+        variable = self.return_highest_score() ## get highest scoring variable
+        if(variable == -1): 
+            variable = variable_selection(cnf_formula) ## if no scores are in the scoreboard, pick a random variable
+        if(variable in self.score_counter):
+            self.score_counter[variable] -= 0.2 ##reduce score of chosen variable a bit more than the other variables.
+            if self.score_counter[variable] <= 0: del self.score_counter[variable]
+        return variable
 
 def DLCS(cnf_formula): # @Ned
     counter = get_literals_counter(cnf_formula)
