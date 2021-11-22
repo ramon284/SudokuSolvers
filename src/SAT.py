@@ -66,6 +66,8 @@ if __name__ == '__main__':
     
     t1, t2 = 0, 0
     solution, branches = None, None
+    
+    print("==========================================")
     # Vanilla DPLL
     if arguments.S1:
         print("NO HEURISTIC")
@@ -107,7 +109,9 @@ if __name__ == '__main__':
         print(f"--- Time elapsed: {t2-t1} ---")
         print(f"--- Number of branches: {branches} ---")
         print("SAT")
+        
     else:
         print(f"--- Time elapsed: {t2-t1} ---")
         print("UNSAT")
+    print("==========================================")
     
