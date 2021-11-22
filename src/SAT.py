@@ -1,4 +1,5 @@
 import time
+import argparse
 import dimacs_decoder as decode
 import sudoku_printer as sp
 from cnf_utils import remove_unit_literals, remove_pure_literals, variable_selection, unit_propagate
@@ -25,8 +26,11 @@ def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=None,
         variable = DLISP(cnf_formula)
     elif heuristic == 'DLISN':
         variable = DLISN(cnf_formula)
-    else:
+    elif heuristic == None:
         variable = variable_selection(cnf_formula, alpha=True)
+    else:
+        print("No such heuristic...")
+        exit()
     
     (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], heuristic=heuristic, branches=branches+1, moms_k=moms_k, container=container)
     if not sat:
@@ -59,7 +63,49 @@ def main(sudoku_path = '', heuristic = None , printGrid = False, moms_k=None):
     print("--- %s branches ---" % (branches))
     return endtime, satisfied, startLength, branches
 
+# if __name__ == '__main__':
+#     # Possible heuristics
+#     # DLCS, DLISN, DLISP, MOMS, VSIDS
+#     main(heuristic='VSIDS', moms_k=0.3)
+
 if __name__ == '__main__':
-    # Possible heuristics
-    # DLCS, DLISN, DLISP, MOMS, VSIDS
-    main(heuristic='VSIDS', moms_k=0.3)
+    parser = argparse.ArgumentParser(prog="SAT")
+
+    parser.add_argument("-S1", help="Run DPLL with no heuristics.", action="store_true")
+    parser.add_argument("-S2", help="Run DPLL with DLCS.", action="store_true")
+    parser.add_argument("-S3", help="Run DPLL with DLISN", action="store_true")
+    parser.add_argument("-S4", help="Run DPLL with DLISP", action="store_true")
+    parser.add_argument("-S5", help="Run DPLL with MOMS", action="store_true")
+    parser.add_argument("-S6", help="Run DPLL with VSDIS", action="store_true")
+
+    parser.add_argument("filename", help="Name of the DIMACS file containing sudoku rules and starting positions.")
+
+    arguments, b = parser.parse_known_args()
+
+    try:
+        clauses = decode.dimacs_rules(arguments.filename)
+    except Exception as e:
+        print("Please provide the path of the input file relative to SAT.py")
+        exit()
+
+    solution, branches = None, None
+    # Vanilla DPLL
+    if arguments.S1:
+        (solution, branches) = backtracking(clauses)
+    # DLCS
+    if arguments.S2:
+        (solution, branches) = backtracking(clauses, heuristic="DLCS")
+    # DLISN
+    if arguments.S3:
+        (solution, branches) = backtracking(clauses, heuristic="DLISN")
+    # DLISP
+    if arguments.S4:
+        (solution, branches) = backtracking(clauses, heuristic="DLISP")
+    # MOMS
+    if arguments.S5:
+        (solution, branches) = backtracking(clauses, heuristic="MOMS", moms_k=0.7)
+    # VSIDS
+    if arguments.S6:
+        (solution, branches) = backtracking(clauses, heuristic="VSIDS")    
+
+    

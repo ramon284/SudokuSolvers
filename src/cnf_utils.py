@@ -44,7 +44,7 @@ def remove_pure_literals(cnf_formula, heuristic=None):
     partial_assignment = []
     pure_literals = [element for element in counter if -1 * element not in counter]
     for pure_literal in pure_literals:
-        cnf_formula = remove_unit_literals(cnf_formula, pure_literal, heuristic=heuristic)
+        cnf_formula = remove_unit_literals(cnf_formula, pure_literal)
     partial_assignment += pure_literals
     return cnf_formula, partial_assignment
 
