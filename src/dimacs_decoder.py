@@ -32,25 +32,25 @@ def dimacs_encode(solution, name):  # turns solution list into dimacs format.
         name = name+'.txt'
     with open(name, 'w') as f:
         for element in solution:
-            element = str.strip(str(element), '[]')
-            f.write(element.replace(',','') + " 0\n")
+            element = str.strip(str(element), '[]') ## remove brackets since we turn a list into a str
+            f.write(element.replace(',','') + " 0\n") ## remove comma's between numbers too
             
-def sudoku_file_into_dimacs_file(filePath, rules):
+def sudoku_file_into_dimacs_file(filePath, rules, sudokuSize = 9):
     with open (filePath) as f: ## takes a .txt file with 81 characters representing the start of a sudoku board
         i = 0                  ## and turns it into a dimacs format, for testing purposes.
         for line in f:
             dimacs = rules[:]
-            for row in range(1,10):
-                for column in range(1,10):
+            for row in range(1,sudokuSize+1):
+                for column in range(1,sudokuSize+1):
                     if(line[0] != '.'):
                         dimacs.append(str(row)+str(column)+line[0])
                     line = line[1:]
-            dimacs_encode(dimacs, 'dimacs/1000sudokusWithRules/sudoku'+str(i))
+            dimacs_encode(dimacs, 'dimacs/4x4sudokusWithRules/sudoku'+str(i))
             i += 1
 
-rules = dimacs_rules('dimacs/rulesets/sudoku-rules.txt')
-
-sudoku_file_into_dimacs_file('test_problems/1000sudokus.txt', rules)   
+rules = dimacs_rules('dimacs/rulesets/sudoku-rules-4x4.txt')
+print(rules)
+sudoku_file_into_dimacs_file('test_problems/4x4sudokus.txt', rules, 4)   
 
 # start = dimacs_start('sudoku-example.txt')
 # rules = dimacs_rules("D:\Projects\SudokuSolvers\sudoku-rules.txt")
