@@ -4,13 +4,21 @@
 def grid_printer(solution, sudoku_size=9):  # prints our sudoku game nicely.
     grid = into_grid(solution, sudoku_size)
     i = 0
-    for row in grid:
-        if i % 3 == 0:
-            print('-' * sudoku_size * 3)
-        print('|', row[0], row[1], row[2], '|', row[3], row[4], row[5], '|',
-              row[6], row[7], row[8], '|')
-        i += 1
-    print('-' * sudoku_size * 3)
+    if(sudoku_size == 9):
+        for row in grid:
+            if i % 3 == 0:
+                print('-' * sudoku_size * 3)
+            print('|', row[0], row[1], row[2], '|', row[3], row[4], row[5], '|',
+                row[6], row[7], row[8], '|')
+            i += 1
+        print('-' * sudoku_size * 3)
+    if(sudoku_size == 4):
+        for row in grid:
+            if i % 2 == 0:
+                print('-' * sudoku_size*2)
+            print('|'+ row[0] + row[1] + '|' + row[2] + row[3] +'|')
+            i+= 1
+        print('-' * sudoku_size * 2)
 
 
 def into_grid(solution, sudoku_size=9):
