@@ -1,10 +1,16 @@
+import subprocess
 import os
-import rumy_sat_solver as SAT
+import SAT as SAT
 import xlsxwriter
+import dimacs_decoder as dimacs
 
-directoryName = 'src/dimacs/1000sudokus/'
+directoryName = 'dimacs/1000sudokus/'
 directory = os.fsencode(directoryName) ## map containing our sudokus
     
+sudokuSize = 9 
+rulePath = 'dimacs/rulesets/sudoku-rules.txt'   
+ruleSet = dimacs.dimacs_rules(rulePath)    
+subprocess.call(['py', 'SAT.py', '-S1', 'input.txt', str(sudokuSize)])    
 sudokuList = [] ## put every filename in a list  
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
@@ -12,7 +18,7 @@ for file in os.listdir(directory):
         sudokuList.append(directoryName+'/'+filename)
 
 workbook = xlsxwriter.Workbook('src/statistics_data/SATResults.xlsx')
-heuristiclist = [None, 'VSIDS', 'DLCS', 'DLISP', 'DLISN', 'MOMS']  
+heuristiclist = [['-S1', 'None'], ['-S2','DLCS'], ['-S3', 'DLISN'], ['-S4', 'DLISP'], ['-S5','MOMS'], ['S6', 'VSIDS']]  
 for heuristic in heuristiclist:
     maxNumber = 0 
     timeList = []

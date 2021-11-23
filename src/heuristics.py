@@ -41,7 +41,7 @@ class VSIDSContainer:
             return -1
         self.reduce_score()
         highest = max(self.score_counter, key=self.score_counter.get)
-        self.score_counter[highest] -= 0.4
+        self.score_counter[highest] -= 0.005
         return highest
 
     def VSIDS(self, cnf_formula): # @Ramon
