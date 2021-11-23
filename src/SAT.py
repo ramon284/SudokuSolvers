@@ -36,7 +36,7 @@ def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=0.5, 
     # Maybe think about branching and recursive depth as different measures
     #???
     branches += 1
-    
+
     (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], heuristic=heuristic, branches=branches, moms_k=moms_k, container=container)
 
     if not sat:
@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
     parser.add_argument("filename", help="Name of the DIMACS file containing sudoku rules and starting positions.")
 
+    parser.add_argument("size", help="Size of the sudoku - 9x9 / 4x4 / etc")
     arguments, b = parser.parse_known_args()
 
     try:
@@ -63,10 +64,10 @@ if __name__ == '__main__':
         print(arguments.filename)
         print("Please provide the path of the input file relative to SAT.py")
         exit()
-    
+
     t1, t2 = 0, 0
     solution, branches = None, None
-    
+
     print("==========================================")
     # Vanilla DPLL
     if arguments.S1:
@@ -109,9 +110,9 @@ if __name__ == '__main__':
         print(f"--- Time elapsed: {t2-t1} ---")
         print(f"--- Number of branches: {branches} ---")
         print("SAT")
-        
+        sp.grid_printer(solution, int(arguments.size))
     else:
         print(f"--- Time elapsed: {t2-t1} ---")
         print("UNSAT")
     print("==========================================")
-    
+
