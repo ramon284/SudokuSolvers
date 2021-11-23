@@ -52,4 +52,7 @@ def sudoku_file_into_dimacs_file(filePath, rules, sudokuSize = 9):
 #sudoku_file_into_dimacs_file('test_problems/4x4sudokus.txt', rules, 4)   
 # start = dimacs_start('sudoku-example.txt')
 # rules = dimacs_rules("D:\Projects\SudokuSolvers\sudoku-rules.txt")
-# print(rules)
+
+#x = (dimacs_rules('dimacs/4x4sudokusWithRules/sudoku0.txt'))
+#print(x)
+#print(len(x) - 448)

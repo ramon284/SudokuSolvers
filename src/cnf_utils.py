@@ -1,7 +1,6 @@
 import random
 import operator
 
-
 def minClauses(cnf_formula): # @Wafaa
     minClauses = []
     size = -1
