@@ -47,11 +47,13 @@ def unit_propagate(cnf_formula, VSIDSContainer, heuristic):
 def remove_pure_literals(cnf_formula, heuristic=None):
     counter = get_literals_counter(cnf_formula)
     partial_assignment = []
+    removed_pure_clauses_counter = len(cnf_formula)
     pure_literals = [element for element in counter if -1 * element not in counter]
     for pure_literal in pure_literals:
         cnf_formula = remove_unit_literals(cnf_formula, pure_literal)
     partial_assignment += pure_literals
-    return cnf_formula, partial_assignment
+    removed_pure_clauses_counter -= len(cnf_formula)
+    return cnf_formula, partial_assignment, removed_pure_clauses_counter
 
 
 def get_most_occurent_literal(formula):  # @Wafaa
