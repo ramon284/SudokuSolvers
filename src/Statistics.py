@@ -59,5 +59,5 @@ for sudokuSize in sudokuSizes:
             'Unit clauses removed': unitClauseList,
             'Pure clauses removed': pureClauseList
         })
-        excel.to_csv('statistics_data/'+str(sudokuSize)+'x'+str(sudokuSize)+'/'+str(heuristic[1])+str(sudokuSize)+'.csv')
+        excel.to_csv('statistics_data/'+str(sudokuSize)+'x'+str(sudokuSize)+'/'+str(heuristic[1])+'.csv')
         print(heuristic[1] + str(sudokuSize) +' - file created')
