@@ -21,31 +21,39 @@ def get_clause_size(clause): # @Wafaa
         counter = counter + 1
     return counter
 
-def unit_propagate(cnf_formula, VSIDSContainer, heuristic):
+def unit_propagate(cnf_formula, container, heuristic):
     partial_assignment = []
     unit_clauses = [c for c in cnf_formula if len(c) == 1]
+    removed_unit_clauses_counter = len(cnf_formula)
     while len(unit_clauses) > 0:
         unit_literal = unit_clauses[0]
-        if heuristic == 'VSIDS':
-            cnf_formula = VSIDSContainer.remove_unit_literals_VSIDS(cnf_formula, unit_literal[0])
+        if (heuristic == 'VSIDS'):
+            cnf_formula = container.remove_unit_literals_VSIDS(cnf_formula, unit_literal[0])
         else:
             cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0])
         partial_assignment += [unit_literal[0]]
         if cnf_formula == -1:
-            return -1, []
+            return -1, [], 0
         if not cnf_formula:
-            return cnf_formula, partial_assignment
+            return cnf_formula, partial_assignment, removed_unit_clauses_counter
         unit_clauses = [c for c in cnf_formula if len(c) == 1]
-    return cnf_formula, partial_assignment
+    removed_unit_clauses_counter -= len(cnf_formula)
+    return cnf_formula, partial_assignment, removed_unit_clauses_counter
 
-def remove_pure_literals(cnf_formula, heuristic=None): 
+def remove_pure_literals(cnf_formula, container, heuristic=None): 
     counter = get_literals_counter(cnf_formula)
     partial_assignment = []
+    removed_pure_clauses_counter = len(cnf_formula)
     pure_literals = [element for element in counter if -1 * element not in counter]
-    for pure_literal in pure_literals:
-        cnf_formula = remove_unit_literals(cnf_formula, pure_literal)
+    if(heuristic == 'VSIDS'):
+        for pure_literal in pure_literals:
+            cnf_formula = container.remove_unit_literals_VSIDS(cnf_formula, pure_literal)     
+    else:   
+        for pure_literal in pure_literals:
+            cnf_formula = remove_unit_literals(cnf_formula, pure_literal)
     partial_assignment += pure_literals
-    return cnf_formula, partial_assignment
+    removed_pure_clauses_counter -= len(cnf_formula)
+    return cnf_formula, partial_assignment, removed_pure_clauses_counter
 
 def get_most_occurent_literal(formula): # @Wafaa
     counter = get_literals_counter(formula)
