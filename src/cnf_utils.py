@@ -27,6 +27,7 @@ def get_clause_size(clause):  # @Wafaa
 def unit_propagate(cnf_formula, VSIDSContainer, heuristic):
     partial_assignment = []
     unit_clauses = [c for c in cnf_formula if len(c) == 1]
+    removed_unit_clauses_counter = len(cnf_formula)
     while len(unit_clauses) > 0:
         unit_literal = unit_clauses[0]
         if heuristic == 'VSIDS':
@@ -35,11 +36,12 @@ def unit_propagate(cnf_formula, VSIDSContainer, heuristic):
             cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0])
         partial_assignment += [unit_literal[0]]
         if cnf_formula == -1:
-            return -1, []
+            return -1, [], 0
         if not cnf_formula:
-            return cnf_formula, partial_assignment
+            return cnf_formula, partial_assignment, removed_unit_clauses_counter
         unit_clauses = [c for c in cnf_formula if len(c) == 1]
-    return cnf_formula, partial_assignment
+    removed_unit_clauses_counter -= len(cnf_formula)
+    return cnf_formula, partial_assignment, removed_unit_clauses_counter
 
 
 def remove_pure_literals(cnf_formula, heuristic=None):
