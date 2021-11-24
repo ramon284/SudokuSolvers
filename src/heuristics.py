@@ -30,6 +30,8 @@ class VSIDSContainer:
         for lit in literals:
             lit = abs(lit)
             self.score_counter[lit]=self.score_counter.get(lit,0)+1
+            if self.score_counter[lit]> 1: 
+                self.score_counter[lit] = 1
         
     def reduce_score(self, reduction = 0.95): ## reduce the score of a variable every scoring iteration
         for score in self.score_counter:
