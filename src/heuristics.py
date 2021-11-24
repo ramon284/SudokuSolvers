@@ -47,7 +47,7 @@ class VSIDSContainer:
     def VSIDS(self, cnf_formula): # @Ramon
         variable = self.return_highest_score() ## get highest scoring variable
         if(variable == -1): 
-            variable = variable_selection(cnf_formula) ## if no scores are in the scoreboard, pick a random variable
+            variable = variable_selection(cnf_formula, alpha=True) ## if no scores are in the scoreboard, pick a random variable
         if(variable in self.score_counter):
             if self.score_counter[variable] <= 0: del self.score_counter[variable]
         return variable
