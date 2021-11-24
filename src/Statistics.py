@@ -1,11 +1,14 @@
 import os
 import SAT as SAT
-import xlsxwriter
 import dimacs_decoder as dimacs
 import time as t
 
 sudokuSizes = [4, 9]
+<<<<<<< Updated upstream
 maxNumber = 10 ## amount of sudokus we want to solve (per size)
+=======
+maxNumber = 1000 ## amount of sudokus we want to solve (per size)
+>>>>>>> Stashed changes
 
 for sudokuSize in sudokuSizes:
     directoryName = ''
