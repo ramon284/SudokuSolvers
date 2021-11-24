@@ -10,11 +10,9 @@ def backtracking(cnf_formula, partial_assignment=None, heuristic=None, moms_k=0.
     if partial_assignment is None:
         partial_assignment = []
     if container is None:
-
         container = VSIDSContainer({})
-    cnf_formula, pure_assignment, pure_clauses_counter = remove_pure_literals(cnf_formula, heuristic=heuristic)
-    cnf_formula, unit_assignment, unit_clauses_counter = unit_propagate(cnf_formula, heuristic=heuristic,
-                                                                        VSIDSContainer=container)
+    cnf_formula, pure_assignment, pure_clauses_counter = remove_pure_literals(cnf_formula, heuristic=heuristic, container=container)
+    cnf_formula, unit_assignment, unit_clauses_counter = unit_propagate(cnf_formula, heuristic=heuristic, container=container)
     removed_unit_clauses_counter += unit_clauses_counter
     removed_pure_clauses_counter += pure_clauses_counter
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
@@ -40,29 +38,44 @@ def backtracking(cnf_formula, partial_assignment=None, heuristic=None, moms_k=0.
         print("No such heuristic...")
         exit()
 
-    # TODO We need to check how branching is counted
-    # Maybe think about branching and recursive depth as different measures
-    #???
     backtrack_branches += 1
 
-
-    (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
-        remove_unit_literals(cnf_formula, variable),
-        partial_assignment + [variable],
-        heuristic=heuristic,
-        backtrack_branches=backtrack_branches,
-        moms_k=moms_k,
-        container=container,
-        removed_unit_clauses_counter=removed_unit_clauses_counter,
-        removed_pure_clauses_counter=removed_pure_clauses_counter)
+    if (heuristic == 'VSIDS'):
+        (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
+            container.remove_unit_literals_VSIDS(cnf_formula, variable),
+            partial_assignment + [variable],
+            heuristic=heuristic,
+            backtrack_branches=backtrack_branches,
+            moms_k=moms_k,
+            container=container,
+            removed_unit_clauses_counter=removed_unit_clauses_counter,
+            removed_pure_clauses_counter=removed_pure_clauses_counter)
+    else:
+        (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
+            remove_unit_literals(cnf_formula, variable),
+            partial_assignment + [variable],
+            heuristic=heuristic,
+            backtrack_branches=backtrack_branches,
+            moms_k=moms_k,
+            container=container,
+            removed_unit_clauses_counter=removed_unit_clauses_counter,
+            removed_pure_clauses_counter=removed_pure_clauses_counter)
 
     if not sat:
-        (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
-            remove_unit_literals(cnf_formula, -variable),
-            partial_assignment + [-variable],
-            heuristic=heuristic, backtrack_branches=backtrack_branches,
-            moms_k=moms_k, container=container, removed_unit_clauses_counter=removed_unit_clauses_counter,
-            removed_pure_clauses_counter=removed_pure_clauses_counter)
+        if(heuristic == 'VSIDS'):
+            (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
+                container.remove_unit_literals_VSIDS(cnf_formula, -variable),
+                partial_assignment + [-variable],
+                heuristic=heuristic, backtrack_branches=backtrack_branches,
+                moms_k=moms_k, container=container, removed_unit_clauses_counter=removed_unit_clauses_counter,
+                removed_pure_clauses_counter=removed_pure_clauses_counter)
+        else:
+            (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
+                remove_unit_literals(cnf_formula, -variable),
+                partial_assignment + [-variable],
+                heuristic=heuristic, backtrack_branches=backtrack_branches,
+                moms_k=moms_k, container=container, removed_unit_clauses_counter=removed_unit_clauses_counter,
+                removed_pure_clauses_counter=removed_pure_clauses_counter)
     return sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter
 
 
