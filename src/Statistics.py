@@ -24,8 +24,6 @@ for sudokuSize in sudokuSizes:
         if filename.endswith(".txt"):
             sudokuList.append(directoryName+'/'+filename)
 
-
-
     heuristiclist = [['-S1', None], ['-S2','DLCS'], ['-S3', 'DLISN'], ['-S4', 'DLISP'], ['-S5','MOMS'], ['S6', 'VSIDS']]  
 
     for heuristic in heuristiclist:
