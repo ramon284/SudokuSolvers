@@ -1,20 +1,25 @@
-import time
 import argparse
+import time
+
 import dimacs_decoder as decode
 import sudoku_printer as sp
 from cnf_utils import remove_unit_literals, remove_pure_literals, unit_propagate
 from heuristics import DLCS, DLISN, DLISP, MOMS, VSIDSContainer, variable_selection
 
-def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=0.5, branches=0, container=None):
-    if(container == None):
+
+def backtracking(cnf_formula, partial_assignment=None, heuristic=None, moms_k=0.5, backtrack_branches=0,
+                 container=None):
+    if partial_assignment is None:
+        partial_assignment = []
+    if container is None:
         container = VSIDSContainer({})
     cnf_formula, pure_assignment = remove_pure_literals(cnf_formula, heuristic=heuristic)
     cnf_formula, unit_assignment = unit_propagate(cnf_formula, heuristic=heuristic, VSIDSContainer=container)
     partial_assignment = partial_assignment + pure_assignment + unit_assignment
     if cnf_formula == -1:
-        return [], branches
+        return [], backtrack_branches
     if not cnf_formula:
-        return partial_assignment, branches
+        return partial_assignment, backtrack_branches
 
     if heuristic == "MOMS":
         variable = MOMS(cnf_formula, k=moms_k)
@@ -26,7 +31,7 @@ def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=0.5, 
         variable = DLISP(cnf_formula)
     elif heuristic == 'DLISN':
         variable = DLISN(cnf_formula)
-    elif heuristic == None:
+    elif heuristic is None:
         variable = variable_selection(cnf_formula, alpha=True)
     else:
         print("No such heuristic...")
@@ -34,14 +39,21 @@ def backtracking(cnf_formula, partial_assignment=[], heuristic=None,moms_k=0.5, 
 
     # TODO We need to check how branching is counted
     # Maybe think about branching and recursive depth as different measures
-    #???
-    branches += 1
+    # ???
+    backtrack_branches += 1
 
-    (sat, branches) = backtracking(remove_unit_literals(cnf_formula, variable), partial_assignment + [variable], heuristic=heuristic, branches=branches, moms_k=moms_k, container=container)
+    (sat, backtrack_branches) = backtracking(remove_unit_literals(cnf_formula, variable),
+                                             partial_assignment + [variable],
+                                             heuristic=heuristic, backtrack_branches=backtrack_branches, moms_k=moms_k,
+                                             container=container)
 
     if not sat:
-        (sat, branches) = backtracking(remove_unit_literals(cnf_formula, -variable), partial_assignment + [-variable], heuristic=heuristic, branches=branches, moms_k=moms_k, container=container)
-    return sat, branches
+        (sat, backtrack_branches) = backtracking(remove_unit_literals(cnf_formula, -variable),
+                                                 partial_assignment + [-variable],
+                                                 heuristic=heuristic, backtrack_branches=backtrack_branches,
+                                                 moms_k=moms_k, container=container)
+    return sat, backtrack_branches
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog="SAT")
@@ -58,6 +70,7 @@ if __name__ == '__main__':
     parser.add_argument("size", help="Size of the sudoku - 9x9 / 4x4 / etc")
     arguments, b = parser.parse_known_args()
 
+    clauses = None
     try:
         clauses = decode.dimacs_rules(arguments.filename)
     except Exception as e:
@@ -107,12 +120,11 @@ if __name__ == '__main__':
         t2 = time.time()
 
     if solution:
-        print(f"--- Time elapsed: {t2-t1} ---")
+        print(f"--- Time elapsed: {t2 - t1} ---")
         print(f"--- Number of branches: {branches} ---")
         print("SAT")
         sp.grid_printer(solution, int(arguments.size))
     else:
-        print(f"--- Time elapsed: {t2-t1} ---")
+        print(f"--- Time elapsed: {t2 - t1} ---")
         print("UNSAT")
     print("==========================================")
-
