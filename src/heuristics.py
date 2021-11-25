@@ -33,7 +33,7 @@ class VSIDSContainer:
             if self.score_counter[lit]> 1: 
                 self.score_counter[lit] = 1
         
-    def reduce_score(self, reduction = 0.95): ## reduce the score of a variable every scoring iteration
+    def reduce_score(self, reduction = 0.6): ## reduce the score of a variable every scoring iteration
         for score in self.score_counter:
             if(self.score_counter[score] != 0):
                 self.score_counter[score] = round(self.score_counter[score]*reduction, 3)
@@ -43,7 +43,7 @@ class VSIDSContainer:
             return -1
         self.reduce_score()
         highest = max(self.score_counter, key=self.score_counter.get)
-        self.score_counter[highest] -= 0.02
+        self.score_counter[highest] -= 0.05
         return highest
 
     def VSIDS(self, cnf_formula): # @Ramon

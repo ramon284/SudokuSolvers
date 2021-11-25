@@ -27,10 +27,10 @@ def unit_propagate(cnf_formula, container, heuristic):
     removed_unit_clauses_counter = len(cnf_formula)
     while len(unit_clauses) > 0:
         unit_literal = unit_clauses[0]
-        #if (heuristic == 'VSIDS'):     ## this might be bad.
-        #    cnf_formula = container.remove_unit_literals_VSIDS(cnf_formula, unit_literal[0])
-        #else:
-        cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0])
+        if (heuristic == 'VSIDS'):     ## this might be bad.
+            cnf_formula = container.remove_unit_literals_VSIDS(cnf_formula, unit_literal[0])
+        else:
+            cnf_formula = remove_unit_literals(cnf_formula, unit_literal[0])
         partial_assignment += [unit_literal[0]]
         if cnf_formula == -1:
             return -1, [], 0
