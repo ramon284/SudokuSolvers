@@ -143,10 +143,11 @@ if __name__ == '__main__':
         print(f"--- Number of unit clauses removed: {removed_unit_clauses_counter} ---")
         print(f"--- Number of pure clauses removed: {removed_pure_clauses_counter} ---")
         print("SAT")
-        #decode.dimacs_encode(solution, arguments.filename)
+        decode.dimacs_encode(solution, arguments.filename)
         #sp.grid_printer(solution, int(9))
     else:
         print(f"--- Time elapsed: {t2-t1} ---")
         print("UNSAT")
+        decode.failed_sudoku_encode(arguments.filename)
     print("==========================================")
 
