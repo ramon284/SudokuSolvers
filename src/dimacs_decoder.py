@@ -29,7 +29,9 @@ def dimacs_start(file):  # parse the starting points into a list
 
 def dimacs_encode(solution, name):  # turns solution list into dimacs format.
     if(name[-4:] != '.txt'):
-        name = name+'.txt'
+        name = name+'out.txt'
+    elif(name[-4:] == '.txt'):
+        name = name[:-4]+'.out'
     with open(name, 'w') as f:
         for element in solution:
             element = str.strip(str(element), '[]') ## remove brackets since we turn a list into a str
@@ -56,3 +58,4 @@ def sudoku_file_into_dimacs_file(filePath, rules, sudokuSize = 9):
 #x = (dimacs_rules('dimacs/4x4sudokusWithRules/sudoku0.txt'))
 #print(x)
 #print(len(x) - 448)
+
