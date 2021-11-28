@@ -5,7 +5,7 @@ import time as t
 import pandas as pd
 
 sudokuSizes = [4, 9]
-maxNumber = 1000 ## amount of sudokus we want to solve (per size)
+maxNumber = 5 ## amount of sudokus we want to solve (per size) ## normally 1000
 
 for sudokuSize in sudokuSizes:
     directoryName = ''
