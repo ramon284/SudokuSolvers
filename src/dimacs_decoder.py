@@ -26,11 +26,15 @@ def dimacs_start(file):  # parse the starting points into a list
         #location_list.append((position[:3])) ## str
     return location_list
 
-
 def dimacs_encode(solution, name):  # turns solution list into dimacs format.
+    variables = len(solution)
     if(name[-4:] != '.txt'):
-        name = name+'.txt'
+        name = name+'out'
+    elif(name[-4:] == '.txt'):
+        name = name[:-4]+'.out'
     with open(name, 'w') as f:
+        f.write('c this sudoku is solved \n')
+        f.write('p cnf '+str(variables)+' '+str(variables)+'\n') ## we know a sudoku output dimacs has rows of 1 element long.
         for element in solution:
             element = str.strip(str(element), '[]') ## remove brackets since we turn a list into a str
             f.write(element.replace(',','') + " 0\n") ## remove comma's between numbers too
@@ -47,12 +51,12 @@ def sudoku_file_into_dimacs_file(filePath, rules, sudokuSize = 9):
                     line = line[1:]
             dimacs_encode(dimacs, 'dimacs/4x4sudokusWithRules/sudoku'+str(i))
             i += 1
-
-#rules = dimacs_rules('dimacs/rulesets/sudoku-rules-4x4.txt')
-#sudoku_file_into_dimacs_file('test_problems/4x4sudokus.txt', rules, 4)   
-# start = dimacs_start('sudoku-example.txt')
-# rules = dimacs_rules("D:\Projects\SudokuSolvers\sudoku-rules.txt")
-
-#x = (dimacs_rules('dimacs/4x4sudokusWithRules/sudoku0.txt'))
-#print(x)
-#print(len(x) - 448)
+            
+def failed_sudoku_encode(name):
+    if(name[-4:] != '.txt'):
+        name = name+'out'
+    elif(name[-4:] == '.txt'):
+        name = name[:-4]+'.out'
+    with open(name, 'w') as f:
+        f.write('')
+        

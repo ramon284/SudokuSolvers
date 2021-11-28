@@ -24,8 +24,8 @@ def backtracking(cnf_formula, partial_assignment=None, heuristic=None, moms_k=0.
 
     if heuristic == "MOMS":
         variable = MOMS(cnf_formula, k=moms_k)
-    elif heuristic == 'VSIDS':
-        variable = container.VSIDS(cnf_formula)
+    #elif heuristic == 'VSIDS':
+    #    variable = container.VSIDS(cnf_formula)
     elif heuristic == 'DLCS':
         variable = DLCS(cnf_formula)
     elif heuristic == 'DLISP':
@@ -40,42 +40,23 @@ def backtracking(cnf_formula, partial_assignment=None, heuristic=None, moms_k=0.
 
     backtrack_branches += 1
 
-    if (heuristic == 'VSIDS'):
-        (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
-            container.remove_unit_literals_VSIDS(cnf_formula, variable),
-            partial_assignment + [variable],
-            heuristic=heuristic,
-            backtrack_branches=backtrack_branches,
-            moms_k=moms_k,
-            container=container,
-            removed_unit_clauses_counter=removed_unit_clauses_counter,
-            removed_pure_clauses_counter=removed_pure_clauses_counter)
-    else:
-        (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
-            remove_unit_literals(cnf_formula, variable),
-            partial_assignment + [variable],
-            heuristic=heuristic,
-            backtrack_branches=backtrack_branches,
-            moms_k=moms_k,
-            container=container,
-            removed_unit_clauses_counter=removed_unit_clauses_counter,
-            removed_pure_clauses_counter=removed_pure_clauses_counter)
+    (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
+        remove_unit_literals(cnf_formula, variable),
+        partial_assignment + [variable],
+        heuristic=heuristic,
+        backtrack_branches=backtrack_branches,
+        moms_k=moms_k,
+        container=container,
+        removed_unit_clauses_counter=removed_unit_clauses_counter,
+        removed_pure_clauses_counter=removed_pure_clauses_counter)
 
     if not sat:
-        if(heuristic == 'VSIDS'):
-            (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
-                container.remove_unit_literals_VSIDS(cnf_formula, -variable),
-                partial_assignment + [-variable],
-                heuristic=heuristic, backtrack_branches=backtrack_branches,
-                moms_k=moms_k, container=container, removed_unit_clauses_counter=removed_unit_clauses_counter,
-                removed_pure_clauses_counter=removed_pure_clauses_counter)
-        else:
-            (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
-                remove_unit_literals(cnf_formula, -variable),
-                partial_assignment + [-variable],
-                heuristic=heuristic, backtrack_branches=backtrack_branches,
-                moms_k=moms_k, container=container, removed_unit_clauses_counter=removed_unit_clauses_counter,
-                removed_pure_clauses_counter=removed_pure_clauses_counter)
+        (sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(
+            remove_unit_literals(cnf_formula, -variable),
+            partial_assignment + [-variable],
+            heuristic=heuristic, backtrack_branches=backtrack_branches,
+            moms_k=moms_k, container=container, removed_unit_clauses_counter=removed_unit_clauses_counter,
+            removed_pure_clauses_counter=removed_pure_clauses_counter)
     return sat, backtrack_branches, removed_unit_clauses_counter, removed_pure_clauses_counter
 
 
@@ -88,11 +69,11 @@ if __name__ == '__main__':
     parser.add_argument("-S3", help="Run DPLL with DLISN", action="store_true")
     parser.add_argument("-S4", help="Run DPLL with DLISP", action="store_true")
     parser.add_argument("-S5", help="Run DPLL with MOMS", action="store_true")
-    parser.add_argument("-S6", help="Run DPLL with VSDIS", action="store_true")
+    #parser.add_argument("-S6", help="Run DPLL with VSDIS", action="store_true")
 
     parser.add_argument("filename", help="Name of the DIMACS file containing sudoku rules and starting positions.")
 
-    parser.add_argument("size", help="Size of the sudoku - 9x9 / 4x4 / etc")
+    #parser.add_argument("size", help="Size of the sudoku - 9x9 / 4x4 / etc")
     arguments, b = parser.parse_known_args()
 
     try:
@@ -147,13 +128,14 @@ if __name__ == '__main__':
                                                                           removed_pure_clauses_counter=removed_pure_clauses_counter)
         t2 = time.time()
     # VSIDS
-    if arguments.S6:
-        print("VSIDS")
-        t1 = time.time()
-        (solution, branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(clauses, heuristic="VSIDS",
-                                                                          removed_unit_clauses_counter=removed_unit_clauses_counter,
-                                                                          removed_pure_clauses_counter=removed_pure_clauses_counter)
-        t2 = time.time()
+    #if arguments.S6:
+    #    print("VSIDS")
+    #    t1 = time.time()
+    #    (solution, branches, removed_unit_clauses_counter, removed_pure_clauses_counter) = backtracking(clauses, heuristic="VSIDS",
+    #                                                                      removed_unit_clauses_counter=removed_unit_clauses_counter,
+    #                                                                      removed_pure_clauses_counter=removed_pure_clauses_counter)
+    #    t2 = time.time()
+
 
     if solution:
         print(f"--- Time elapsed: {t2-t1} ---")
@@ -161,9 +143,11 @@ if __name__ == '__main__':
         print(f"--- Number of unit clauses removed: {removed_unit_clauses_counter} ---")
         print(f"--- Number of pure clauses removed: {removed_pure_clauses_counter} ---")
         print("SAT")
-        sp.grid_printer(solution, int(arguments.size))
+        decode.dimacs_encode(solution, arguments.filename)
+        #sp.grid_printer(solution, int(9))
     else:
         print(f"--- Time elapsed: {t2-t1} ---")
         print("UNSAT")
+        decode.failed_sudoku_encode(arguments.filename)
     print("==========================================")
 
